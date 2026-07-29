@@ -24,7 +24,7 @@
 		{
 			icon: '🔍',
 			title: 'Find your gist',
-			text: 'Concerts, comedy, football, festivals — browse what’s happening near you, whatever time of day it kicks off.'
+			text: 'Concerts, comedy, football, festivals — browse what’s happening near you.'
 		},
 		{
 			icon: '🎟️',
@@ -32,20 +32,15 @@
 			text: 'Regular, VIP, or table service — see exactly what each ticket unlocks.'
 		},
 		{
-			icon: '💳',
-			title: 'Pay your way',
-			text: 'Card, bank transfer, or Paystack and Flutterwave — pay in naira, no surprise charges at the door.'
-		},
-		{
 			icon: '⚡',
 			title: 'Tap in, show up',
-			text: 'Your ticket lands instantly and travels with you — just tap in and you’re through the gate.'
+			text: 'Your ticket lands instantly. Pay in naira, no surprise charges at the door.'
 		}
 	];
 </script>
 
 <svelte:head>
-	<title>Tix — Naija's biggest moments, one tap away</title>
+	<title>Tix — Naija's biggest nights, one tap away</title>
 </svelte:head>
 
 <section class="hero" use:spotlight>
@@ -62,10 +57,10 @@
 	</div>
 
 	<div class="container hero-inner">
-		<span class="eyebrow" in:fly={{ y: 18, duration: 600 }}>🇳🇬 Naija's biggest moments, one tap away</span>
+		<span class="eyebrow" in:fly={{ y: 18, duration: 600 }}>🇳🇬 Naija's biggest nights, one tap away</span>
 		<h1 class="display" in:fly={{ y: 26, duration: 700, delay: 80 }}>
 			your next<br />
-			<span class="lime-text">big moment</span><br />
+			<span class="lime-text">night out</span><br />
 			is booked.
 		</h1>
 		<p class="lead" in:fly={{ y: 22, duration: 700, delay: 200 }}>
@@ -167,21 +162,20 @@
 			</div>
 		</div>
 
-		<div class="bento">
+		<div class="steps">
 			{#each steps as step, i (step.title)}
-				<div class="bento-item reveal" use:reveal={{ delay: i * 120 }}>
-					<span class="bento-glow" aria-hidden="true"></span>
-					<span class="step-num display">{String(i + 1).padStart(2, '0')}</span>
+				<div class="step reveal" use:reveal={{ delay: i * 120 }}>
 					<span class="step-icon">{step.icon}</span>
 					<h3>{step.title}</h3>
 					<p>{step.text}</p>
+					<span class="step-num display">{String(i + 1).padStart(2, '0')}</span>
 				</div>
 			{/each}
 		</div>
 	</div>
 </section>
 
-<section class="section cta-band" id="sell">
+<section class="section cta-band">
 	<div class="container">
 		<div class="cta-card reveal" use:reveal>
 			<div class="cta-glow" aria-hidden="true"></div>
@@ -194,7 +188,7 @@
 
 <style>
 	.hero {
-		padding: 64px 0 60px;
+		padding: 120px 0 60px;
 		position: relative;
 		overflow: hidden;
 		--mx: 50%;
@@ -221,6 +215,7 @@
 		border-bottom: 2px solid var(--border);
 		padding: 10px 0;
 		z-index: 0;
+		mix-blend-mode: difference;
 	}
 
 	.hero-marquee-track {
@@ -233,7 +228,7 @@
 		font-family: 'Anton', sans-serif;
 		font-size: 2.2rem;
 		letter-spacing: 0.04em;
-		color: rgba(245, 245, 240, 0.06);
+		color: var(--lime);
 		padding-right: 2rem;
 	}
 
@@ -311,7 +306,7 @@
 	.hero-stats {
 		display: flex;
 		gap: 40px;
-		margin-top: 40px;
+		margin-top: 56px;
 		flex-wrap: wrap;
 	}
 
@@ -403,13 +398,8 @@
 	}
 
 	.mt-dash {
-		position: relative;
-		height: 4px;
+		border-top: 2px dashed var(--paper-border);
 		margin: 4px 0 8px;
-		background-image: radial-gradient(circle, rgba(23, 22, 15, 0.32) 1.3px, transparent 1.4px);
-		background-size: 8px 4px;
-		background-repeat: repeat-x;
-		background-position: center;
 	}
 
 	.mt-price {
@@ -579,77 +569,19 @@
 		}
 	}
 
-	.bento {
+	.steps {
 		display: grid;
-		grid-template-columns: 1.15fr 1fr 1fr;
-		grid-template-rows: auto auto;
-		gap: 20px;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 24px;
 	}
 
-	.bento-item {
+	.step {
 		position: relative;
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: var(--radius-lg);
 		padding: 32px 28px;
 		overflow: hidden;
-		display: flex;
-		flex-direction: column;
-		transition: border-color 0.3s var(--ease), transform 0.3s var(--ease);
-	}
-
-	.bento-item:hover {
-		border-color: rgba(215, 255, 63, 0.3);
-		transform: translateY(-3px);
-	}
-
-	.bento-glow {
-		position: absolute;
-		width: 220px;
-		height: 220px;
-		right: -80px;
-		top: -80px;
-		border-radius: 50%;
-		background: radial-gradient(circle, rgba(215, 255, 63, 0.1), transparent 70%);
-		pointer-events: none;
-	}
-
-	.bento-item:nth-child(1) {
-		grid-column: 1;
-		grid-row: 1 / 3;
-		justify-content: center;
-	}
-
-	.bento-item:nth-child(1) .step-icon {
-		font-size: 2.6rem;
-		margin-bottom: 22px;
-	}
-
-	.bento-item:nth-child(1) h3 {
-		font-size: 1.5rem;
-	}
-
-	.bento-item:nth-child(2) {
-		grid-column: 2;
-		grid-row: 1;
-	}
-
-	.bento-item:nth-child(3) {
-		grid-column: 3;
-		grid-row: 1;
-	}
-
-	.bento-item:nth-child(4) {
-		grid-column: 2 / 4;
-		grid-row: 2;
-		flex-direction: row;
-		align-items: center;
-		gap: 24px;
-	}
-
-	.bento-item:nth-child(4) .step-icon {
-		margin-bottom: 0;
-		flex-shrink: 0;
 	}
 
 	.step-icon {
@@ -658,65 +590,27 @@
 		margin-bottom: 18px;
 	}
 
-	.bento-item h3 {
+	.step h3 {
 		font-size: 1.15rem;
 		margin-bottom: 10px;
 	}
 
-	.bento-item p {
+	.step p {
 		color: var(--text-dim);
 		font-size: 0.9rem;
 	}
 
 	.step-num {
 		position: absolute;
-		top: 16px;
+		top: 12px;
 		right: 20px;
-		font-size: 2.2rem;
+		font-size: 2.4rem;
 		color: var(--border);
 	}
 
-	@media (max-width: 900px) {
-		.bento {
-			grid-template-columns: 1fr 1fr;
-		}
-
-		.bento-item:nth-child(1) {
-			grid-column: 1 / 3;
-			grid-row: 1;
-		}
-
-		.bento-item:nth-child(2) {
-			grid-column: 1;
-			grid-row: 2;
-		}
-
-		.bento-item:nth-child(3) {
-			grid-column: 2;
-			grid-row: 2;
-		}
-
-		.bento-item:nth-child(4) {
-			grid-column: 1 / 3;
-			grid-row: 3;
-		}
-	}
-
-	@media (max-width: 640px) {
-		.bento {
+	@media (max-width: 780px) {
+		.steps {
 			grid-template-columns: 1fr;
-		}
-
-		.bento-item:nth-child(1),
-		.bento-item:nth-child(2),
-		.bento-item:nth-child(3),
-		.bento-item:nth-child(4) {
-			grid-column: 1;
-			grid-row: auto;
-		}
-
-		.bento-item:nth-child(4) {
-			flex-direction: column;
 		}
 	}
 
