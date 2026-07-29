@@ -46,7 +46,7 @@
 				},
 				{
 					q: 'When do I get paid?',
-					a: 'Payouts go to your linked bank account automatically. Timing depends on your plan — see the Pricing page for details.'
+					a: 'Payouts go to your linked bank account automatically after your event, minus our fee. See the Pricing page for exactly how that fee is calculated.'
 				},
 				{
 					q: 'Can I run multiple ticket tiers for one event?',
@@ -91,6 +91,13 @@
 				</div>
 			</div>
 		{/each}
+
+		<div class="faq-contact reveal" use:reveal>
+			<p>
+				Still have more questions?
+				<a href="mailto:hello@tix.ng" class="lime-text">Reach out to us →</a>
+			</p>
+		</div>
 	</div>
 </section>
 
@@ -126,6 +133,23 @@
 
 	.faq-container {
 		max-width: 780px;
+	}
+
+	.faq-contact {
+		text-align: center;
+		padding: 36px 24px;
+		border: 1px dashed var(--border);
+		border-radius: var(--radius-lg);
+	}
+
+	.faq-contact p {
+		font-size: 1rem;
+		color: var(--text-dim);
+	}
+
+	.faq-contact a {
+		font-weight: 700;
+		margin-left: 4px;
 	}
 
 	.faq-group {

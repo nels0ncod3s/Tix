@@ -26,23 +26,23 @@
 			title: 'Support',
 			links: [
 				{ label: 'FAQs', href: '/faq' },
-				{ label: 'Contact Us', href: '/' },
-				{ label: 'Refund Policy', href: '/' }
+				{ label: 'Contact Us', href: 'mailto:hello@tix.ng' },
+				{ label: 'Refund Policy', href: '/faq' }
 			]
 		}
 	];
 
 	const bars = (() => {
 		const rng = rngFor('footer-barcode');
-		return Array.from({ length: 46 }, () => (rng() > 0.6 ? 3 : rng() > 0.3 ? 2 : 1));
+		return Array.from({ length: 60 }, () => (rng() > 0.6 ? 3 : rng() > 0.3 ? 2 : 1));
 	})();
 </script>
 
 <footer class="footer">
-	<span class="footer-wordmark display" aria-hidden="true">TIX.</span>
-
 	<div class="container ticket reveal" use:reveal>
 		<div class="ticket-main">
+			<span class="ticket-watermark display" aria-hidden="true">TIX.</span>
+
 			<div class="signup">
 				<h3 class="display">We outside!</h3>
 				<p>
@@ -73,18 +73,15 @@
 			</div>
 		</div>
 
-		<div class="ticket-perf" aria-hidden="true">
-			<span class="perf-arrow top"></span>
-			<span class="perf-line"></span>
-			<span class="perf-arrow bottom"></span>
+		<div class="perforation" aria-hidden="true">
+			<span class="notch left"></span>
+			<span class="notch right"></span>
 		</div>
 
 		<div class="ticket-barcode" aria-hidden="true">
-			<div class="barcode-strip">
-				{#each bars as w, i (i)}
-					<span style="width:{w}px"></span>
-				{/each}
-			</div>
+			{#each bars as w, i (i)}
+				<span style="width:{w}px"></span>
+			{/each}
 		</div>
 	</div>
 
@@ -105,46 +102,42 @@
 
 <style>
 	.footer {
-		position: relative;
 		margin-top: 64px;
-		overflow: hidden;
-	}
-
-	.footer-wordmark {
-		position: absolute;
-		top: -0.62em;
-		left: 50%;
-		transform: translateX(-50%);
-		font-size: clamp(6rem, 16vw, 13rem);
-		color: var(--paper-ink);
-		opacity: 0.06;
-		white-space: nowrap;
-		pointer-events: none;
-		z-index: 0;
 	}
 
 	.ticket {
 		position: relative;
-		background: var(--paper);
-		color: var(--paper-ink);
-		border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-		display: grid;
-		grid-template-columns: 1fr 1fr auto auto;
-		align-items: stretch;
 		z-index: 1;
-		overflow: hidden;
 	}
 
 	.ticket-main {
-		grid-column: 1 / 3;
+		position: relative;
+		overflow: hidden;
+		border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+		background: var(--paper);
+		color: var(--paper-ink);
 		display: flex;
+		justify-content: space-between;
 		gap: 48px;
 		flex-wrap: wrap;
 		padding: 56px 40px;
 	}
 
+	.ticket-watermark {
+		position: absolute;
+		right: -0.04em;
+		bottom: -0.3em;
+		font-size: clamp(4.5rem, 11vw, 8rem);
+		color: var(--paper-ink);
+		opacity: 0.05;
+		white-space: nowrap;
+		pointer-events: none;
+		line-height: 1;
+	}
+
 	.signup {
-		max-width: 340px;
+		position: relative;
+		max-width: 320px;
 	}
 
 	.signup h3 {
@@ -164,11 +157,12 @@
 		gap: 10px;
 		border-bottom: 1.5px solid var(--paper-ink);
 		padding-bottom: 10px;
-		max-width: 360px;
+		max-width: 320px;
 	}
 
 	.subscribe input {
 		flex: 1;
+		min-width: 0;
 		border: none;
 		background: transparent;
 		color: var(--paper-ink);
@@ -184,6 +178,11 @@
 	}
 
 	.subscribe button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
 		background: none;
 		border: none;
 		color: var(--paper-ink);
@@ -202,15 +201,16 @@
 	}
 
 	.cols {
+		position: relative;
 		display: flex;
-		gap: 56px;
+		gap: 48px;
 		flex-wrap: wrap;
 	}
 
 	.col h4 {
-		font-size: 0.75rem;
+		font-size: 0.72rem;
 		font-weight: 700;
-		letter-spacing: 0.06em;
+		letter-spacing: 0.08em;
 		color: var(--paper-ink-dim);
 		margin-bottom: 16px;
 	}
@@ -225,6 +225,8 @@
 	}
 
 	.col a {
+		display: inline-block;
+		padding: 2px 0;
 		color: var(--paper-ink);
 		font-size: 0.92rem;
 		font-weight: 600;
@@ -235,57 +237,44 @@
 		opacity: 0.6;
 	}
 
-	.ticket-perf {
+	.perforation {
 		position: relative;
-		width: 32px;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		padding: 20px 0;
-	}
-
-	.perf-line {
-		flex: 1;
-		width: 0;
-		border-left: 2px dashed var(--paper-border);
-	}
-
-	.perf-arrow {
-		width: 0;
 		height: 0;
-		border-left: 6px solid transparent;
-		border-right: 6px solid transparent;
-		flex-shrink: 0;
+		border-top: 2px dashed var(--paper-border);
 	}
 
-	.perf-arrow.top {
-		border-top: 7px solid var(--paper-border);
+	.notch {
+		position: absolute;
+		top: -10px;
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		background: var(--bg);
 	}
 
-	.perf-arrow.bottom {
-		border-bottom: 7px solid var(--paper-border);
+	.notch.left {
+		left: 24px;
+	}
+
+	.notch.right {
+		right: 24px;
 	}
 
 	.ticket-barcode {
-		width: 64px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		overflow: hidden;
+		border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 		background: var(--paper-2);
-	}
-
-	.barcode-strip {
+		padding: 18px 40px;
 		display: flex;
 		align-items: center;
 		gap: 3px;
-		height: 56px;
-		transform: rotate(90deg);
+		height: 44px;
+		overflow: hidden;
 	}
 
-	.barcode-strip span {
+	.ticket-barcode span {
 		height: 100%;
 		background: var(--paper-ink);
+		opacity: 0.7;
 		border-radius: 1px;
 		flex-shrink: 0;
 	}
@@ -294,14 +283,11 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 20px 24px;
-		background: var(--paper-2);
-		color: var(--paper-ink-dim);
+		padding: 20px 24px 0;
+		color: var(--text-dimmer);
 		font-size: 0.82rem;
 		flex-wrap: wrap;
 		gap: 14px;
-		position: relative;
-		z-index: 1;
 	}
 
 	.locations-pill {
@@ -310,15 +296,16 @@
 		gap: 6px;
 		padding: 8px 14px;
 		border-radius: 999px;
-		border: 1px solid var(--paper-border);
-		color: var(--paper-ink);
+		border: 1px solid var(--border);
+		color: var(--text);
 		font-weight: 600;
 		font-size: 0.8rem;
-		transition: background 0.25s var(--ease);
+		transition: background 0.25s var(--ease), border-color 0.25s var(--ease);
 	}
 
 	.locations-pill:hover {
-		background: rgba(23, 22, 15, 0.06);
+		background: var(--surface);
+		border-color: var(--lime);
 	}
 
 	.bottom-right {
@@ -328,12 +315,12 @@
 	}
 
 	.bottom-right a {
-		color: var(--paper-ink-dim);
+		color: var(--text-dimmer);
 		transition: color 0.2s var(--ease);
 	}
 
 	.bottom-right a:hover {
-		color: var(--paper-ink);
+		color: var(--text);
 	}
 
 	.socials {
@@ -342,10 +329,10 @@
 	}
 
 	.social {
-		width: 32px;
-		height: 32px;
+		width: 38px;
+		height: 38px;
 		border-radius: 999px;
-		border: 1px solid var(--paper-border);
+		border: 1px solid var(--border);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -353,41 +340,31 @@
 	}
 
 	.social:hover {
-		background: var(--paper-ink);
-		color: var(--lime);
+		background: var(--lime);
+		color: var(--ink);
 	}
 
-	@media (max-width: 900px) {
-		.ticket {
-			grid-template-columns: 1fr auto;
-		}
-
+	@media (max-width: 720px) {
 		.ticket-main {
-			grid-column: 1;
-			padding: 40px 28px;
-		}
-
-		.ticket-perf {
-			display: none;
+			padding: 36px 24px;
+			gap: 28px;
 		}
 
 		.ticket-barcode {
-			width: 40px;
+			padding: 14px 24px;
+			height: 36px;
 		}
 	}
 
-	@media (max-width: 640px) {
-		.ticket {
-			grid-template-columns: 1fr;
-		}
-
-		.ticket-barcode {
+	@media (max-width: 560px) {
+		.ticket-watermark {
 			display: none;
 		}
 
-		.ticket-main {
+		.cols {
+			width: 100%;
 			flex-direction: column;
-			gap: 32px;
+			gap: 28px;
 		}
 
 		.bottom {

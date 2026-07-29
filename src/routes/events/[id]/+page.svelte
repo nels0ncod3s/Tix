@@ -157,7 +157,7 @@
 	.hero-banner {
 		position: relative;
 		overflow: hidden;
-		padding: 160px 0 60px;
+		padding: clamp(100px, 22vw, 160px) 0 clamp(36px, 6vw, 60px);
 		background: linear-gradient(180deg, var(--bg-soft), var(--bg));
 		border-bottom: 1px solid var(--border);
 	}
@@ -388,16 +388,17 @@
 	.stepper {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		gap: 8px;
 		background: var(--bg);
 		border: 1px solid var(--border);
 		border-radius: 999px;
-		padding: 6px 10px;
+		padding: 4px;
 	}
 
 	.stepper button {
-		width: 26px;
-		height: 26px;
+		width: 36px;
+		height: 36px;
+		flex-shrink: 0;
 		border-radius: 999px;
 		border: none;
 		background: var(--surface);

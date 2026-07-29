@@ -137,8 +137,8 @@
 	}
 
 	.close {
-		width: 32px;
-		height: 32px;
+		width: 38px;
+		height: 38px;
 		border-radius: 999px;
 		border: 1px solid var(--border);
 		background: var(--surface);
@@ -213,21 +213,22 @@
 	.stepper {
 		display: flex;
 		align-items: center;
-		gap: 10px;
+		gap: 6px;
 		background: var(--bg);
 		border: 1px solid var(--border);
 		border-radius: 999px;
-		padding: 4px 8px;
+		padding: 4px;
 	}
 
 	.stepper button {
-		width: 22px;
-		height: 22px;
+		width: 34px;
+		height: 34px;
+		flex-shrink: 0;
 		border-radius: 999px;
 		border: none;
 		background: var(--surface);
 		color: var(--text);
-		font-size: 1rem;
+		font-size: 1.1rem;
 		line-height: 1;
 		transition: background 0.2s var(--ease);
 	}

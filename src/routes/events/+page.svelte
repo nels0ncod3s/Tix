@@ -6,11 +6,20 @@
 	let searchTerm = $state('');
 	let selectedCategory = $state('all');
 	let sort = $state('date');
+	let searchInput = $state(null);
 
 	$effect(() => {
 		searchTerm = page.url.searchParams.get('q') ?? '';
 		selectedCategory = page.url.searchParams.get('category') ?? 'all';
 	});
+
+	function onWindowKeydown(e) {
+		if (e.key !== '/') return;
+		const tag = document.activeElement?.tagName;
+		if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+		e.preventDefault();
+		searchInput?.focus();
+	}
 
 	const filtered = $derived.by(() => {
 		const term = searchTerm.trim().toLowerCase();
@@ -40,30 +49,45 @@
 </script>
 
 <svelte:head>
-	<title>Events — Tix</title>
+	<title>Browse tickets — Tix</title>
 </svelte:head>
+
+<svelte:window onkeydown={onWindowKeydown} />
 
 <section class="listing-hero">
 	<div class="container">
 		<span class="kicker">Browse</span>
-		<h1 class="display">Find your next event</h1>
-		<p>{events.length} events across music, sports, comedy, and more — all over Nigeria.</p>
+		<h1 class="display">Find your next ticket</h1>
+		<p>{events.length} tickets on sale across music, sports, comedy, and more — all over Nigeria.</p>
 	</div>
 </section>
 
 <section class="section listing">
 	<div class="container">
-		<div class="filter-bar card">
+		<div class="filter-bar">
 			<div class="search-wrap">
 				<svg viewBox="0 0 24 24" width="18" height="18"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-				<input type="text" placeholder="Search by name, venue, or city..." bind:value={searchTerm} />
+				<input
+					type="text"
+					placeholder="Search by name, venue, or city..."
+					bind:value={searchTerm}
+					bind:this={searchInput}
+				/>
+				{#if searchTerm}
+					<button type="button" class="clear-btn" aria-label="Clear search" onclick={() => (searchTerm = '')}>✕</button>
+				{:else}
+					<kbd class="kbd-hint">/</kbd>
+				{/if}
 			</div>
 
-			<select bind:value={sort} class="sort-select">
-				<option value="date">Sort: Soonest</option>
-				<option value="price-asc">Sort: Price (low to high)</option>
-				<option value="price-desc">Sort: Price (high to low)</option>
-			</select>
+			<div class="select-wrap">
+				<select bind:value={sort} class="sort-select">
+					<option value="date">Sort: Soonest</option>
+					<option value="price-asc">Sort: Price (low to high)</option>
+					<option value="price-desc">Sort: Price (high to low)</option>
+				</select>
+				<svg class="select-chevron" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+			</div>
 		</div>
 
 		<div class="chip-row">
@@ -82,7 +106,7 @@
 			{/each}
 		</div>
 
-		<p class="result-count">{filtered.length} event{filtered.length === 1 ? '' : 's'} found</p>
+		<p class="result-count">{filtered.length} ticket{filtered.length === 1 ? '' : 's'} found</p>
 
 		{#if filtered.length > 0}
 			<div class="grid">
@@ -132,7 +156,6 @@
 	.filter-bar {
 		display: flex;
 		gap: 14px;
-		padding: 14px;
 		margin-bottom: 20px;
 		flex-wrap: wrap;
 	}
@@ -143,20 +166,23 @@
 		display: flex;
 		align-items: center;
 		gap: 10px;
-		background: var(--bg);
+		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: 999px;
-		padding: 10px 18px;
+		padding: 12px 18px;
 		color: var(--text-dimmer);
-		transition: border-color 0.25s var(--ease);
+		backdrop-filter: blur(16px);
+		transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
 	}
 
 	.search-wrap:focus-within {
 		border-color: var(--lime);
+		box-shadow: 0 0 0 4px rgba(215, 255, 63, 0.15);
 	}
 
 	.search-wrap input {
 		flex: 1;
+		min-width: 0;
 		border: none;
 		background: transparent;
 		color: var(--text);
@@ -167,13 +193,72 @@
 		outline: none;
 	}
 
+	.clear-btn {
+		flex-shrink: 0;
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		border: none;
+		background: var(--surface-hover);
+		color: var(--text-dim);
+		font-size: 0.7rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: background 0.2s var(--ease), color 0.2s var(--ease);
+	}
+
+	.clear-btn:hover {
+		background: var(--lime);
+		color: var(--ink);
+	}
+
+	.kbd-hint {
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 20px;
+		height: 20px;
+		padding: 0 5px;
+		border-radius: 6px;
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--text-dimmer);
+		font-family: monospace;
+		font-size: 0.72rem;
+	}
+
+	.select-wrap {
+		position: relative;
+		display: flex;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
 	.sort-select {
-		background: var(--bg);
+		appearance: none;
+		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: 999px;
-		padding: 10px 18px;
+		padding: 12px 38px 12px 18px;
 		color: var(--text);
 		font-size: 0.88rem;
+		backdrop-filter: blur(16px);
+		transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+	}
+
+	.sort-select:focus-visible {
+		outline: none;
+		border-color: var(--lime);
+		box-shadow: 0 0 0 4px rgba(215, 255, 63, 0.15);
+	}
+
+	.select-chevron {
+		position: absolute;
+		right: 14px;
+		color: var(--text-dimmer);
+		pointer-events: none;
 	}
 
 	.chip-row {

@@ -2,48 +2,33 @@
 	import { fly } from 'svelte/transition';
 	import { reveal } from '$lib/actions/reveal.js';
 
-	const plans = [
+	const paths = [
 		{
-			name: 'Starter',
+			name: 'Free events',
 			price: 'Free',
-			sub: 'to list your event',
-			fee: '5.5% + ₦100',
-			feeNote: 'per ticket sold',
-			blurb: 'For first-time hosts testing the waters.',
-			perks: ['Unlimited event listings', 'Instant payouts to your bank', 'QR check-in app', 'Email support'],
+			sub: 'forever, no catches',
+			blurb: 'Community meetups, open mics, free listens — if there’s no ticket price, there’s no fee.',
+			perks: [
+				'Unlimited free event listings',
+				'QR code check-in app',
+				'Guest list export',
+				'Email support'
+			],
 			featured: false
 		},
 		{
-			name: 'Growth',
-			price: '₦15,000',
-			sub: '/month',
-			fee: '3.5% + ₦100',
-			feeNote: 'per ticket sold',
-			blurb: 'For hosts running events every month.',
+			name: 'Paid events',
+			price: '3.5%',
+			sub: '+ ₦100 per ticket sold',
+			blurb: 'No setup cost, no monthly bill. You only ever pay when a ticket actually sells.',
 			perks: [
-				'Everything in Starter',
-				'Lower per-ticket fee',
-				'Custom event page branding',
-				'Priority support',
-				'Sales analytics dashboard'
+				'Everything in Free events',
+				'Instant payouts to your bank',
+				'Regular, VIP & table-service tiers',
+				'Sales analytics dashboard',
+				'Priority support'
 			],
 			featured: true
-		},
-		{
-			name: 'Enterprise',
-			price: 'Custom',
-			sub: 'talk to us',
-			fee: 'Custom rate',
-			feeNote: 'volume-based',
-			blurb: 'For venues, festivals, and high-volume promoters.',
-			perks: [
-				'Everything in Growth',
-				'Dedicated account manager',
-				'API access',
-				'Multi-team permissions',
-				'Custom contract & invoicing'
-			],
-			featured: false
 		}
 	];
 </script>
@@ -59,8 +44,9 @@
 			Sell tickets.<br /><span class="lime-text">Keep more of it.</span>
 		</h1>
 		<p class="lead" in:fly={{ y: 22, duration: 700, delay: 200 }}>
-			No setup fees, no monthly minimums on Starter. You only pay when you sell a ticket.
-			Attendees never pay extra to browse or check out — our fee is already baked into the ticket price.
+			We're not a subscription. List for free, and only pay a small fee on tickets you
+			actually sell. Attendees always pay the exact price you set — our cut comes out of
+			your payout, never added at checkout.
 		</p>
 	</div>
 </section>
@@ -68,17 +54,13 @@
 <section class="section">
 	<div class="container">
 		<div class="plans">
-			{#each plans as plan, i (plan.name)}
+			{#each paths as plan, i (plan.name)}
 				<div class="plan reveal" class:featured={plan.featured} use:reveal={{ delay: i * 100 }}>
-					{#if plan.featured}<span class="plan-badge">Most popular</span>{/if}
+					{#if plan.featured}<span class="plan-badge">Most common</span>{/if}
 					<h3>{plan.name}</h3>
 					<div class="plan-price">
 						<span class="display">{plan.price}</span>
 						<span class="plan-sub">{plan.sub}</span>
-					</div>
-					<div class="plan-fee">
-						<strong>{plan.fee}</strong>
-						<span>{plan.feeNote}</span>
 					</div>
 					<p class="plan-blurb">{plan.blurb}</p>
 					<ul class="plan-perks">
@@ -87,16 +69,36 @@
 						{/each}
 					</ul>
 					<a href="/#sell" class="btn {plan.featured ? 'btn-primary' : 'btn-ghost'} plan-cta">
-						{plan.name === 'Enterprise' ? 'Talk to sales' : 'Start selling'}
+						List an event
 					</a>
 				</div>
 			{/each}
 		</div>
 
+		<div class="example reveal" use:reveal>
+			<span class="example-label">For example</span>
+			<div class="example-row">
+				<div class="example-step">
+					<span class="example-figure display">₦10,000</span>
+					<span>ticket price you set</span>
+				</div>
+				<span class="example-op">−</span>
+				<div class="example-step">
+					<span class="example-figure display">₦450</span>
+					<span>our fee (3.5% + ₦100)</span>
+				</div>
+				<span class="example-op">=</span>
+				<div class="example-step highlight">
+					<span class="example-figure display">₦9,550</span>
+					<span>you receive per ticket</span>
+				</div>
+			</div>
+		</div>
+
 		<p class="fine-print reveal" use:reveal>
-			Placeholder rates shown for illustration — final pricing to be confirmed.
-			Payments processed via Paystack and Flutterwave. Have questions? Check our
-			<a href="/faq" class="lime-text">FAQs</a> or reach out directly.
+			Running a festival, conference, or multi-day event? <a href="mailto:hello@tix.ng" class="lime-text">Reach out</a>
+			for volume pricing. Payments are processed via Paystack and Flutterwave. More questions? Check our
+			<a href="/faq" class="lime-text">FAQs</a>.
 		</p>
 	</div>
 </section>
@@ -129,15 +131,17 @@
 	.lead {
 		font-size: 1.05rem;
 		color: var(--text-dim);
-		max-width: 560px;
+		max-width: 600px;
 		margin: 0 auto;
 	}
 
 	.plans {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: repeat(2, 1fr);
 		gap: 24px;
 		align-items: stretch;
+		max-width: 880px;
+		margin: 0 auto;
 	}
 
 	.plan {
@@ -145,7 +149,7 @@
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: var(--radius-lg);
-		padding: 36px 30px;
+		padding: 36px 34px;
 		display: flex;
 		flex-direction: column;
 		transition: border-color 0.3s var(--ease), transform 0.3s var(--ease);
@@ -182,41 +186,25 @@
 	.plan-price {
 		display: flex;
 		align-items: baseline;
-		gap: 6px;
-		margin-bottom: 6px;
-	}
-
-	.plan-price .display {
-		font-size: 2.2rem;
-	}
-
-	.plan-sub {
-		font-size: 0.82rem;
-		color: var(--text-dimmer);
-	}
-
-	.plan-fee {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		padding: 10px 0 20px;
-		margin-bottom: 20px;
+		gap: 8px;
+		margin-bottom: 18px;
+		padding-bottom: 20px;
 		border-bottom: 1px solid var(--border);
 	}
 
-	.plan-fee strong {
+	.plan-price .display {
+		font-size: 2.6rem;
 		color: var(--lime);
-		font-size: 1rem;
 	}
 
-	.plan-fee span {
-		font-size: 0.76rem;
+	.plan-sub {
+		font-size: 0.85rem;
 		color: var(--text-dimmer);
 	}
 
 	.plan-blurb {
 		color: var(--text-dim);
-		font-size: 0.88rem;
+		font-size: 0.92rem;
 		margin-bottom: 22px;
 	}
 
@@ -231,7 +219,7 @@
 	}
 
 	.plan-perks li {
-		font-size: 0.85rem;
+		font-size: 0.88rem;
 		color: var(--text-dim);
 	}
 
@@ -239,14 +227,74 @@
 		width: 100%;
 	}
 
+	.example {
+		margin-top: 48px;
+		max-width: 880px;
+		margin-left: auto;
+		margin-right: auto;
+		padding: 32px;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		background: var(--surface);
+	}
+
+	.example-label {
+		display: block;
+		text-align: center;
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--coral);
+		margin-bottom: 20px;
+	}
+
+	.example-row {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 20px;
+		flex-wrap: wrap;
+	}
+
+	.example-step {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6px;
+		text-align: center;
+		padding: 16px 20px;
+		border-radius: var(--radius-md);
+	}
+
+	.example-step.highlight {
+		background: rgba(215, 255, 63, 0.08);
+		border: 1px solid rgba(215, 255, 63, 0.3);
+	}
+
+	.example-figure {
+		font-size: 1.6rem;
+	}
+
+	.example-step span:last-child {
+		font-size: 0.8rem;
+		color: var(--text-dimmer);
+	}
+
+	.example-op {
+		font-size: 1.4rem;
+		color: var(--text-dimmer);
+		font-weight: 700;
+	}
+
 	.fine-print {
 		text-align: center;
 		color: var(--text-dimmer);
 		font-size: 0.82rem;
-		margin-top: 40px;
+		margin-top: 32px;
 	}
 
-	@media (max-width: 900px) {
+	@media (max-width: 720px) {
 		.plans {
 			grid-template-columns: 1fr;
 		}

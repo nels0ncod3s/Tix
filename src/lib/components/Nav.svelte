@@ -7,6 +7,7 @@
 
 	let scrollY = $state(0);
 	let mobileOpen = $state(false);
+	let searchOpen = $state(false);
 	let searchValue = $state('');
 
 	const scrolled = $derived(scrollY > 12);
@@ -14,7 +15,8 @@
 	const links = [
 		{ href: '/', label: 'Home' },
 		{ href: '/events', label: 'Events' },
-		{ href: '/pricing', label: 'Pricing' }
+		{ href: '/pricing', label: 'Pricing' },
+		{ href: '/faq', label: 'FAQs' }
 	];
 
 	function isActive(href) {
@@ -25,6 +27,7 @@
 	function submitSearch(e) {
 		e.preventDefault();
 		const q = searchValue.trim();
+		searchOpen = false;
 		goto(q ? `/events?q=${encodeURIComponent(q)}` : '/events');
 	}
 
@@ -62,8 +65,13 @@
 		</nav>
 
 		<div class="actions">
-			<form class="search" onsubmit={submitSearch}>
-				<button type="submit" class="icon-btn search-submit" aria-label="Search">
+			<form class="search" class:open={searchOpen} onsubmit={submitSearch}>
+				<button
+					type="button"
+					class="icon-btn search-toggle"
+					aria-label="Search events"
+					onclick={() => (searchOpen = !searchOpen)}
+				>
 					<svg viewBox="0 0 24 24" width="18" height="18"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
 				</button>
 				<input
@@ -81,7 +89,7 @@
 				{/if}
 			</button>
 
-			<a href="/#sell" class="btn btn-ghost host-cta">List an event</a>
+			<a href="/#sell" class="host-link">List an event</a>
 			<a href="/events" class="btn btn-primary cta">Get Tickets</a>
 
 			<button
@@ -171,6 +179,7 @@
 	.bar {
 		display: flex;
 		align-items: center;
+		justify-content: space-between;
 		gap: 28px;
 		height: 76px;
 	}
@@ -226,24 +235,32 @@
 		border: 1px solid var(--border);
 		border-radius: 999px;
 		padding: 4px;
-		transition: border-color 0.25s var(--ease);
+		transition: border-color 0.25s var(--ease), background 0.25s var(--ease);
 	}
 
-	.search:focus-within {
+	.search.open {
 		border-color: var(--lime);
 	}
 
-	.search-submit {
+	.search-toggle {
 		width: 34px;
 		height: 34px;
 	}
 
 	.search-input {
-		width: 220px;
+		width: 0;
+		opacity: 0;
 		border: none;
 		background: transparent;
 		color: var(--text);
 		font-size: 0.9rem;
+		padding: 0;
+		transition: width 0.35s var(--ease), opacity 0.25s var(--ease), padding 0.35s var(--ease);
+	}
+
+	.search.open .search-input {
+		width: 200px;
+		opacity: 1;
 		padding: 6px 14px 6px 4px;
 	}
 
@@ -251,9 +268,17 @@
 		outline: none;
 	}
 
-	.host-cta {
-		padding: 10px 18px;
+	.host-link {
 		font-size: 0.86rem;
+		font-weight: 600;
+		color: var(--text-dim);
+		padding: 0 4px;
+		white-space: nowrap;
+		transition: color 0.2s var(--ease);
+	}
+
+	.host-link:hover {
+		color: var(--lime);
 	}
 
 	.icon-btn {
@@ -330,6 +355,7 @@
 
 	.mobile-search input {
 		flex: 1;
+		min-width: 0;
 		border: none;
 		background: transparent;
 		color: var(--text);
@@ -393,12 +419,28 @@
 			display: none;
 		}
 
-		.cta, .host-cta {
+		.cta, .host-link {
 			display: none;
 		}
 
 		.burger {
 			display: flex;
+		}
+
+		.cart-btn,
+		.burger {
+			width: 42px;
+			height: 42px;
+		}
+
+		.bar {
+			gap: 10px;
+		}
+	}
+
+	@media (max-width: 380px) {
+		.logo {
+			font-size: 1.35rem;
 		}
 	}
 </style>
