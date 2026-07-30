@@ -3,7 +3,6 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { cart } from '$lib/stores/cart.svelte.js';
-	import { categories } from '$lib/data/events.js';
 
 	let scrollY = $state(0);
 	let mobileOpen = $state(false);
@@ -89,7 +88,7 @@
 				{/if}
 			</button>
 
-			<a href="/#sell" class="host-link">List an event</a>
+			<a href="/dashboard" class="host-link">List an event</a>
 			<a href="/events" class="btn btn-primary cta">Get Tickets</a>
 
 			<button
@@ -133,29 +132,15 @@
 				{/each}
 			</nav>
 
-			<div class="mobile-categories" in:fly={{ y: 18, duration: 400, delay: 100 + links.length * 70 }}>
-				{#each categories as cat (cat.id)}
-					<a href={`/events?category=${cat.id}`} onclick={closeMobile}>{cat.icon} {cat.label}</a>
-				{/each}
+			<div class="mobile-cta-row" in:fly={{ y: 18, duration: 400, delay: 100 + links.length * 70 }}>
+				<a href="/dashboard" class="btn btn-ghost mobile-host-cta" onclick={closeMobile}>
+					List an event
+				</a>
+
+				<a href="/events" class="btn btn-primary mobile-cta" onclick={closeMobile}>
+					Get Tickets
+				</a>
 			</div>
-
-			<a
-				href="/#sell"
-				class="btn btn-ghost mobile-host-cta"
-				in:fly={{ y: 18, duration: 400, delay: 100 + (links.length + 1) * 70 }}
-				onclick={closeMobile}
-			>
-				List an event
-			</a>
-
-			<a
-				href="/events"
-				class="btn btn-primary mobile-cta"
-				in:fly={{ y: 18, duration: 400, delay: 100 + (links.length + 2) * 70 }}
-				onclick={closeMobile}
-			>
-				Get Tickets
-			</a>
 		</div>
 	{/if}
 </header>
@@ -165,13 +150,33 @@
 		position: sticky;
 		top: 0;
 		z-index: 100;
-		transition: background 0.4s var(--ease), border-color 0.4s var(--ease), box-shadow 0.4s var(--ease);
+		transition: border-color 0.4s var(--ease), box-shadow 0.4s var(--ease);
 		border-bottom: 1px solid transparent;
 	}
 
-	.nav.scrolled {
+	/*
+	  The scrolled background+blur live on a pseudo-element rather than directly on
+	  .nav. backdrop-filter on .nav would make it a containing block for its
+	  position:fixed descendants (.mobile-overlay), causing the mobile menu to
+	  scroll away with the page instead of staying pinned to the viewport.
+	*/
+	.nav::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
 		background: rgba(10, 10, 11, 0.78);
 		backdrop-filter: blur(18px);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.4s var(--ease);
+	}
+
+	.nav.scrolled::before {
+		opacity: 1;
+	}
+
+	.nav.scrolled {
 		border-bottom-color: var(--border);
 		box-shadow: 0 12px 32px -18px rgba(0, 0, 0, 0.7);
 	}
@@ -385,29 +390,18 @@
 		color: var(--lime);
 	}
 
-	.mobile-categories {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 10px;
-	}
-
-	.mobile-categories a {
-		padding: 9px 16px;
-		border-radius: 999px;
-		background: var(--surface);
-		border: 1px solid var(--border);
-		font-size: 0.85rem;
-		font-weight: 600;
-		color: var(--text-dim);
-	}
-
-	.mobile-cta {
+	.mobile-cta-row {
 		margin-top: auto;
-		width: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
 	}
 
-	.mobile-host-cta {
+	.mobile-cta-row .btn {
 		width: 100%;
+		padding: 17px 24px;
+		font-size: 1.02rem;
+		font-weight: 700;
 	}
 
 	@media (max-width: 860px) {

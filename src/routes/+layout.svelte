@@ -9,33 +9,39 @@
 	import Cursor from '$lib/components/Cursor.svelte';
 
 	let { children } = $props();
+
+	const isDashboard = $derived(page.url.pathname.startsWith('/dashboard'));
 </script>
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<Cursor />
+{#if isDashboard}
+	{@render children()}
+{:else}
+	<Cursor />
 
-<div class="bg-fx" aria-hidden="true">
-	<span class="glow"></span>
-</div>
+	<div class="bg-fx" aria-hidden="true">
+		<span class="glow"></span>
+	</div>
 
-<div class="grain-overlay" aria-hidden="true"></div>
+	<div class="grain-overlay" aria-hidden="true"></div>
 
-<div class="app-shell">
-	<Nav />
-	<main>
-		{#key page.url.pathname}
-			<div class="page-transition" in:fly={{ y: 14, duration: 400, delay: 120 }} out:fade={{ duration: 120 }}>
-				{@render children()}
-			</div>
-		{/key}
-	</main>
-	<Footer />
-</div>
+	<div class="app-shell">
+		<Nav />
+		<main>
+			{#key page.url.pathname}
+				<div class="page-transition" in:fly={{ y: 14, duration: 400, delay: 120 }} out:fade={{ duration: 120 }}>
+					{@render children()}
+				</div>
+			{/key}
+		</main>
+		<Footer />
+	</div>
 
-<CartDrawer />
+	<CartDrawer />
+{/if}
 
 <style>
 	.bg-fx {

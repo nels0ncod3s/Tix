@@ -63,6 +63,7 @@
 	<title>Tix — Every ticket. Every city. One tap away.</title>
 </svelte:head>
 
+<div class="hero-fold">
 <section class="hero" use:spotlight>
 	<div class="hero-glow" aria-hidden="true"></div>
 
@@ -148,19 +149,7 @@
 		{/each}
 	</div>
 </div>
-
-<section class="section categories">
-	<div class="container">
-		<div class="cat-row">
-			{#each categories as cat, i (cat.id)}
-				<a href={`/events?category=${cat.id}`} class="cat-pill reveal" use:reveal={{ delay: i * 60 }}>
-					<span class="cat-icon">{cat.icon}</span>
-					{cat.label}
-				</a>
-			{/each}
-		</div>
-	</div>
-</section>
+</div>
 
 <section class="section">
 	<div class="container">
@@ -209,16 +198,27 @@
 			<div class="cta-glow" aria-hidden="true"></div>
 			<h2 class="display">Got a show worth<br />selling out?</h2>
 			<p>List your event on Tix and reach thousands of people looking for something to do this weekend.</p>
-			<a href="/events" class="btn btn-primary">Start selling tickets</a>
+			<a href="/dashboard" class="btn btn-primary">Start selling tickets</a>
 		</div>
 	</div>
 </section>
 
 <style>
+	.hero-fold {
+		display: flex;
+		flex-direction: column;
+		min-height: 100vh;
+		min-height: calc(100svh - 76px);
+	}
+
 	.hero {
-		padding: 36px 0 48px;
 		position: relative;
 		overflow: hidden;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		padding: 28px 0;
 		--mx: 50%;
 		--my: 30%;
 	}
@@ -579,41 +579,6 @@
 		flex-shrink: 0;
 	}
 
-	.categories {
-		padding-top: 40px;
-		padding-bottom: 12px;
-	}
-
-	.cat-row {
-		display: flex;
-		gap: 12px;
-		flex-wrap: wrap;
-		justify-content: center;
-	}
-
-	.cat-pill {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 10px 18px;
-		border-radius: 999px;
-		background: var(--surface);
-		border: 1px solid var(--border);
-		font-size: 0.88rem;
-		font-weight: 600;
-		transition: transform 0.3s var(--ease), border-color 0.3s var(--ease), background 0.3s var(--ease), color 0.3s var(--ease);
-	}
-
-	.cat-pill:hover {
-		transform: translateY(-3px);
-		border-color: var(--lime);
-		background: var(--surface-hover);
-		color: var(--lime);
-	}
-
-	.cat-icon {
-		font-size: 1.05rem;
-	}
 
 	.section-head {
 		display: flex;

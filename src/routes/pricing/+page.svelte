@@ -68,7 +68,7 @@
 							<li>✓ {perk}</li>
 						{/each}
 					</ul>
-					<a href="/#sell" class="btn {plan.featured ? 'btn-primary' : 'btn-ghost'} plan-cta">
+					<a href="/dashboard" class="btn {plan.featured ? 'btn-primary' : 'btn-ghost'} plan-cta">
 						List an event
 					</a>
 				</div>
@@ -253,8 +253,16 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 20px;
-		flex-wrap: wrap;
+		gap: 16px;
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		padding-bottom: 2px;
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	.example-row::-webkit-scrollbar {
+		display: none;
 	}
 
 	.example-step {
@@ -263,7 +271,8 @@
 		align-items: center;
 		gap: 6px;
 		text-align: center;
-		padding: 16px 20px;
+		flex-shrink: 0;
+		padding: 16px 18px;
 		border-radius: var(--radius-md);
 	}
 
@@ -297,6 +306,24 @@
 	@media (max-width: 720px) {
 		.plans {
 			grid-template-columns: 1fr;
+		}
+
+		.example-row {
+			justify-content: flex-start;
+			margin: 0 -24px;
+			padding: 0 24px 2px;
+		}
+
+		.example-figure {
+			font-size: 1.3rem;
+		}
+
+		.example-op {
+			font-size: 1.1rem;
+		}
+
+		.example-step {
+			padding: 14px 14px;
 		}
 	}
 </style>

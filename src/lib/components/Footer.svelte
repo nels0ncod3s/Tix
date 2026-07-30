@@ -1,6 +1,5 @@
 <script>
 	import { reveal } from '$lib/actions/reveal.js';
-	import { rngFor } from '$lib/utils/hash.js';
 
 	let email = $state('');
 	let subscribed = $state(false);
@@ -18,7 +17,7 @@
 			links: [
 				{ label: 'Discover Events', href: '/events' },
 				{ label: 'Pricing', href: '/pricing' },
-				{ label: 'List an Event', href: '/#sell' },
+				{ label: 'List an Event', href: '/dashboard' },
 				{ label: 'My Tickets', href: '/' }
 			]
 		},
@@ -31,18 +30,11 @@
 			]
 		}
 	];
-
-	const bars = (() => {
-		const rng = rngFor('footer-barcode');
-		return Array.from({ length: 60 }, () => (rng() > 0.6 ? 3 : rng() > 0.3 ? 2 : 1));
-	})();
 </script>
 
 <footer class="footer">
 	<div class="container ticket reveal" use:reveal>
 		<div class="ticket-main">
-			<span class="ticket-watermark display" aria-hidden="true">TIX.</span>
-
 			<div class="signup">
 				<h3 class="display">We outside!</h3>
 				<p>
@@ -73,29 +65,12 @@
 			</div>
 		</div>
 
-		<div class="perforation" aria-hidden="true">
-			<span class="notch left"></span>
-			<span class="notch right"></span>
-		</div>
-
-		<div class="ticket-barcode" aria-hidden="true">
-			{#each bars as w, i (i)}
-				<span style="width:{w}px"></span>
-			{/each}
-		</div>
-	</div>
-
-	<div class="container bottom">
-		<p>© 2026 Tix. Made in Lagos.</p>
-		<a href="/events" class="locations-pill">📍 All Locations</a>
-		<div class="bottom-right">
-			<div class="socials">
-				<a href="/" aria-label="Instagram" class="social">◎</a>
-				<a href="/" aria-label="X" class="social">✕</a>
-				<a href="/" aria-label="TikTok" class="social">♪</a>
+		<div class="bottom">
+			<p>© 2026 Tix.</p>
+			<div class="bottom-right">
+				<a href="/">Privacy</a>
+				<a href="/">Terms</a>
 			</div>
-			<a href="/">Privacy</a>
-			<a href="/">Terms</a>
 		</div>
 	</div>
 </footer>
@@ -108,35 +83,21 @@
 	.ticket {
 		position: relative;
 		z-index: 1;
+		border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+		overflow: hidden;
 	}
 
 	.ticket-main {
-		position: relative;
-		overflow: hidden;
-		border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 		background: var(--paper);
 		color: var(--paper-ink);
 		display: flex;
 		justify-content: space-between;
 		gap: 48px;
 		flex-wrap: wrap;
-		padding: 56px 40px;
-	}
-
-	.ticket-watermark {
-		position: absolute;
-		right: -0.04em;
-		bottom: -0.3em;
-		font-size: clamp(4.5rem, 11vw, 8rem);
-		color: var(--paper-ink);
-		opacity: 0.05;
-		white-space: nowrap;
-		pointer-events: none;
-		line-height: 1;
+		padding: 56px 40px 40px;
 	}
 
 	.signup {
-		position: relative;
 		max-width: 320px;
 	}
 
@@ -201,10 +162,8 @@
 	}
 
 	.cols {
-		position: relative;
 		display: flex;
-		gap: 48px;
-		flex-wrap: wrap;
+		gap: 40px;
 	}
 
 	.col h4 {
@@ -237,144 +196,54 @@
 		opacity: 0.6;
 	}
 
-	.perforation {
-		position: relative;
-		height: 0;
-		border-top: 2px dashed var(--paper-border);
-	}
-
-	.notch {
-		position: absolute;
-		top: -10px;
-		width: 20px;
-		height: 20px;
-		border-radius: 50%;
-		background: var(--bg);
-	}
-
-	.notch.left {
-		left: 24px;
-	}
-
-	.notch.right {
-		right: 24px;
-	}
-
-	.ticket-barcode {
-		border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-		background: var(--paper-2);
-		padding: 18px 40px;
-		display: flex;
-		align-items: center;
-		gap: 3px;
-		height: 44px;
-		overflow: hidden;
-	}
-
-	.ticket-barcode span {
-		height: 100%;
-		background: var(--paper-ink);
-		opacity: 0.7;
-		border-radius: 1px;
-		flex-shrink: 0;
-	}
-
 	.bottom {
+		background: var(--paper-2);
+		color: var(--paper-ink-dim);
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 20px 24px 0;
-		color: var(--text-dimmer);
+		padding: 18px 40px;
 		font-size: 0.82rem;
-		flex-wrap: wrap;
-		gap: 14px;
 	}
 
-	.locations-pill {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		padding: 8px 14px;
-		border-radius: 999px;
-		border: 1px solid var(--border);
-		color: var(--text);
-		font-weight: 600;
-		font-size: 0.8rem;
-		transition: background 0.25s var(--ease), border-color 0.25s var(--ease);
-	}
-
-	.locations-pill:hover {
-		background: var(--surface);
-		border-color: var(--lime);
+	.bottom p {
+		color: var(--paper-ink-dim);
 	}
 
 	.bottom-right {
 		display: flex;
 		align-items: center;
-		gap: 18px;
+		gap: 20px;
 	}
 
 	.bottom-right a {
-		color: var(--text-dimmer);
+		color: var(--paper-ink-dim);
+		font-weight: 600;
 		transition: color 0.2s var(--ease);
 	}
 
 	.bottom-right a:hover {
-		color: var(--text);
-	}
-
-	.socials {
-		display: flex;
-		gap: 8px;
-	}
-
-	.social {
-		width: 38px;
-		height: 38px;
-		border-radius: 999px;
-		border: 1px solid var(--border);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		transition: background 0.25s var(--ease), color 0.25s var(--ease);
-	}
-
-	.social:hover {
-		background: var(--lime);
-		color: var(--ink);
+		color: var(--paper-ink);
 	}
 
 	@media (max-width: 720px) {
 		.ticket-main {
-			padding: 36px 24px;
-			gap: 28px;
-		}
-
-		.ticket-barcode {
-			padding: 14px 24px;
-			height: 36px;
-		}
-	}
-
-	@media (max-width: 560px) {
-		.ticket-watermark {
-			display: none;
-		}
-
-		.cols {
-			width: 100%;
-			flex-direction: column;
+			padding: 36px 24px 28px;
 			gap: 28px;
 		}
 
 		.bottom {
-			flex-direction: column;
-			text-align: center;
+			padding: 16px 24px;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.cols {
+			gap: 24px;
 		}
 
-		.bottom-right {
-			flex-wrap: wrap;
-			justify-content: center;
+		.col h4 {
+			margin-bottom: 12px;
 		}
 	}
 </style>
