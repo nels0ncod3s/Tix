@@ -1,13 +1,25 @@
 <script>
 	import { reveal } from '$lib/actions/reveal.js';
-	import { hostEvents, summary, revenueTrend, salesByCategory, formatNaira } from '$lib/data/dashboard.js';
+	import { formatNaira } from '$lib/utils/currency.js';
+	let { data } = $props();
+	const hostEvents = $derived(data.hostEvents);
+	const summary = $derived({
+		revenue: 0,
+		ticketsSold: 0,
+		views: 0,
+		published: hostEvents.filter((e) => e.status === 'published').length
+	});
+	const revenueTrend = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(
+		(label) => ({ label, value: 0 })
+	);
+	const salesByCategory = [{ label: 'No ticket sales yet', value: 0 }];
 
-	const maxRevenue = Math.max(...revenueTrend.map((d) => d.value));
-	const maxCategory = Math.max(...salesByCategory.map((d) => d.value));
+	const maxRevenue = Math.max(1, ...revenueTrend.map((d) => d.value));
+	const maxCategory = Math.max(1, ...salesByCategory.map((d) => d.value));
 
-	const topEvents = [...hostEvents].sort((a, b) => b.revenue - a.revenue);
-	const avgTicketPrice = summary.ticketsSold ? Math.round(summary.revenue / summary.ticketsSold) : 0;
-	const conversion = summary.views ? ((summary.ticketsSold / summary.views) * 100).toFixed(1) : '0.0';
+	const topEvents = $derived([...hostEvents]);
+	const avgTicketPrice = $derived(0);
+	const conversion = $derived('0.0');
 </script>
 
 <svelte:head>
@@ -17,7 +29,7 @@
 <div class="page-head">
 	<span class="kicker">Insights</span>
 	<h1 class="display">Analytics</h1>
-	<p>How your events are performing across the board.</p>
+	<p>Sales reporting will appear once payments are connected.</p>
 </div>
 
 <div class="stat-grid">
@@ -39,13 +51,18 @@
 	<div class="panel reveal" use:reveal>
 		<div class="panel-head">
 			<h2>Revenue this week</h2>
-			<span class="panel-total">{formatNaira(revenueTrend.reduce((s, d) => s + d.value, 0))}</span>
+			<span class="panel-total"
+				>{formatNaira(revenueTrend.reduce((s, d) => s + d.value, 0))}</span
+			>
 		</div>
 		<div class="bar-chart">
 			{#each revenueTrend as day (day.label)}
 				<div class="bar-col">
 					<div class="bar-track">
-						<div class="bar-fill" style="height:{(day.value / maxRevenue) * 100}%"></div>
+						<div
+							class="bar-fill"
+							style="height:{(day.value / maxRevenue) * 100}%"
+						></div>
 					</div>
 					<span class="bar-label">{day.label}</span>
 				</div>
@@ -62,7 +79,10 @@
 				<div class="hbar-row">
 					<span class="hbar-label">{row.label}</span>
 					<div class="hbar-track">
-						<div class="hbar-fill" style="width:{(row.value / maxCategory) * 100}%"></div>
+						<div
+							class="hbar-fill"
+							style="width:{(row.value / maxCategory) * 100}%"
+						></div>
 					</div>
 					<span class="hbar-value">{row.value}</span>
 				</div>

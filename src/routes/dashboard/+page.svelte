@@ -1,16 +1,44 @@
 <script>
 	import { reveal } from '$lib/actions/reveal.js';
-	import { hostEvents, summary, revenueTrend, formatNaira } from '$lib/data/dashboard.js';
+	import { formatNaira } from '$lib/utils/currency.js';
+	let { data } = $props();
+	const hostEvents = $derived(data.hostEvents);
+	const summary = $derived({
+		revenue: 0,
+		ticketsSold: 0,
+		views: 0,
+		published: hostEvents.filter((e) => e.status === 'published').length
+	});
+	const revenueTrend = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(
+		(label) => ({ label, value: 0 })
+	);
+	const salesByCategory = [{ label: 'No ticket sales yet', value: 0 }];
 
-	const maxRevenue = Math.max(...revenueTrend.map((d) => d.value));
-	const recentEvents = [...hostEvents].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+	const maxRevenue = Math.max(1, ...revenueTrend.map((d) => d.value));
+	const recentEvents = $derived([...hostEvents].slice(0, 5));
 
-	const stats = [
-		{ label: 'Total revenue', value: formatNaira(summary.revenue), hint: 'across all events' },
-		{ label: 'Tickets sold', value: summary.ticketsSold.toLocaleString(), hint: 'lifetime' },
-		{ label: 'Published events', value: summary.published, hint: `of ${hostEvents.length} total` },
-		{ label: 'Profile views', value: summary.views.toLocaleString(), hint: 'last 30 days' }
-	];
+	const stats = $derived([
+		{
+			label: 'Total revenue',
+			value: formatNaira(summary.revenue),
+			hint: 'across all events'
+		},
+		{
+			label: 'Tickets sold',
+			value: summary.ticketsSold.toLocaleString(),
+			hint: 'lifetime'
+		},
+		{
+			label: 'Published events',
+			value: summary.published,
+			hint: `of ${hostEvents.length} total`
+		},
+		{
+			label: 'Profile views',
+			value: summary.views.toLocaleString(),
+			hint: 'last 30 days'
+		}
+	]);
 </script>
 
 <svelte:head>
@@ -21,7 +49,10 @@
 	<div>
 		<span class="kicker">Overview</span>
 		<h1 class="display">Welcome back 👋</h1>
-		<p>Here's how your events are doing.</p>
+		<p>
+			Your saved events. Sales reporting will appear once payments are
+			connected.
+		</p>
 	</div>
 	<a href="/dashboard/create" class="btn btn-primary">+ Create Event</a>
 </div>
@@ -40,13 +71,18 @@
 	<div class="panel chart-panel reveal" use:reveal>
 		<div class="panel-head">
 			<h2>Revenue this week</h2>
-			<span class="panel-total">{formatNaira(revenueTrend.reduce((s, d) => s + d.value, 0))}</span>
+			<span class="panel-total"
+				>{formatNaira(revenueTrend.reduce((s, d) => s + d.value, 0))}</span
+			>
 		</div>
 		<div class="bar-chart">
 			{#each revenueTrend as day (day.label)}
 				<div class="bar-col">
 					<div class="bar-track">
-						<div class="bar-fill" style="height:{(day.value / maxRevenue) * 100}%"></div>
+						<div
+							class="bar-fill"
+							style="height:{(day.value / maxRevenue) * 100}%"
+						></div>
 					</div>
 					<span class="bar-label">{day.label}</span>
 				</div>

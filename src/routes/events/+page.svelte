@@ -1,7 +1,10 @@
 <script>
 	import { page } from '$app/state';
 	import TicketCard from '$lib/components/TicketCard.svelte';
-	import { events, categories } from '$lib/data/events.js';
+	import { categories } from '$lib/data/events.js';
+	import { isEventOnSale } from '$lib/utils/event-sales.js';
+	let { data } = $props();
+	const events = $derived(data.events);
 
 	let searchTerm = $state('');
 	let selectedCategory = $state('all');
@@ -24,7 +27,9 @@
 	const filtered = $derived.by(() => {
 		const term = searchTerm.trim().toLowerCase();
 		let list = events.filter((e) => {
-			const matchesCategory = selectedCategory === 'all' || e.category === selectedCategory;
+			if (!isEventOnSale(e)) return false;
+			const matchesCategory =
+				selectedCategory === 'all' || e.category === selectedCategory;
 			const matchesTerm =
 				!term ||
 				e.title.toLowerCase().includes(term) ||
@@ -34,8 +39,10 @@
 			return matchesCategory && matchesTerm;
 		});
 
-		if (sort === 'price-asc') list = [...list].sort((a, b) => a.price - b.price);
-		else if (sort === 'price-desc') list = [...list].sort((a, b) => b.price - a.price);
+		if (sort === 'price-asc')
+			list = [...list].sort((a, b) => a.price - b.price);
+		else if (sort === 'price-desc')
+			list = [...list].sort((a, b) => b.price - a.price);
 		else list = [...list].sort((a, b) => new Date(a.date) - new Date(b.date));
 
 		return list;
@@ -58,7 +65,10 @@
 	<div class="container">
 		<span class="kicker">Browse</span>
 		<h1 class="display">Find your next ticket</h1>
-		<p>{events.length} tickets on sale across music, sports, comedy, and more — all over Nigeria.</p>
+		<p>
+			{events.filter((event) => isEventOnSale(event)).length} events on sale across
+			music, sports, comedy, and more — all over Nigeria.
+		</p>
 	</div>
 </section>
 
@@ -66,7 +76,24 @@
 	<div class="container">
 		<div class="filter-bar">
 			<div class="search-wrap">
-				<svg viewBox="0 0 24 24" width="18" height="18"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+				<svg viewBox="0 0 24 24" width="18" height="18"
+					><circle
+						cx="11"
+						cy="11"
+						r="7"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+					/><line
+						x1="21"
+						y1="21"
+						x2="16.65"
+						y2="16.65"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+					/></svg
+				>
 				<input
 					type="text"
 					placeholder="Search by name, venue, or city..."
@@ -74,7 +101,12 @@
 					bind:this={searchInput}
 				/>
 				{#if searchTerm}
-					<button type="button" class="clear-btn" aria-label="Clear search" onclick={() => (searchTerm = '')}>✕</button>
+					<button
+						type="button"
+						class="clear-btn"
+						aria-label="Clear search"
+						onclick={() => (searchTerm = '')}>✕</button
+					>
 				{:else}
 					<kbd class="kbd-hint">/</kbd>
 				{/if}
@@ -86,12 +118,31 @@
 					<option value="price-asc">Sort: Price (low to high)</option>
 					<option value="price-desc">Sort: Price (high to low)</option>
 				</select>
-				<svg class="select-chevron" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+				<svg
+					class="select-chevron"
+					viewBox="0 0 24 24"
+					width="14"
+					height="14"
+					aria-hidden="true"
+					><path
+						d="M6 9l6 6 6-6"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/></svg
+				>
 			</div>
 		</div>
 
 		<div class="chip-row">
-			<button type="button" class="chip" class:active={selectedCategory === 'all'} onclick={() => (selectedCategory = 'all')}>
+			<button
+				type="button"
+				class="chip"
+				class:active={selectedCategory === 'all'}
+				onclick={() => (selectedCategory = 'all')}
+			>
 				All events
 			</button>
 			{#each categories as cat (cat.id)}
@@ -101,12 +152,15 @@
 					class:active={selectedCategory === cat.id}
 					onclick={() => (selectedCategory = cat.id)}
 				>
-					{cat.icon} {cat.label}
+					{cat.icon}
+					{cat.label}
 				</button>
 			{/each}
 		</div>
 
-		<p class="result-count">{filtered.length} ticket{filtered.length === 1 ? '' : 's'} found</p>
+		<p class="result-count">
+			{filtered.length} ticket{filtered.length === 1 ? '' : 's'} found
+		</p>
 
 		{#if filtered.length > 0}
 			<div class="grid">
@@ -119,7 +173,9 @@
 				<span class="empty-icon">🔍</span>
 				<h3>No events match your search</h3>
 				<p>Try a different keyword or clear your filters.</p>
-				<button type="button" class="btn btn-primary" onclick={reset}>Clear filters</button>
+				<button type="button" class="btn btn-primary" onclick={reset}
+					>Clear filters</button
+				>
 			</div>
 		{/if}
 	</div>
@@ -172,7 +228,9 @@
 		padding: 12px 18px;
 		color: var(--text-dimmer);
 		backdrop-filter: blur(16px);
-		transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+		transition:
+			border-color 0.25s var(--ease),
+			box-shadow 0.25s var(--ease);
 	}
 
 	.search-wrap:focus-within {
@@ -205,7 +263,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		transition: background 0.2s var(--ease), color 0.2s var(--ease);
+		transition:
+			background 0.2s var(--ease),
+			color 0.2s var(--ease);
 	}
 
 	.clear-btn:hover {
@@ -245,7 +305,9 @@
 		color: var(--text);
 		font-size: 0.88rem;
 		backdrop-filter: blur(16px);
-		transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+		transition:
+			border-color 0.25s var(--ease),
+			box-shadow 0.25s var(--ease);
 	}
 
 	.sort-select:focus-visible {

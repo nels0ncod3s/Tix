@@ -2,27 +2,36 @@
 	import { fly, fade } from 'svelte/transition';
 	import { cart } from '$lib/stores/cart.svelte.js';
 	import { formatNaira } from '$lib/utils/currency.js';
-	import TicketReveal from './TicketReveal.svelte';
 
 	let checkingOut = $state(false);
-	let completedOrder = $state(null);
-
-	function checkout() {
-		if (cart.items.length === 0) return;
+	let checkoutError = $state('');
+	async function checkout() {
+		if (!cart.items.length || checkingOut) return;
 		checkingOut = true;
-		setTimeout(() => {
-			completedOrder = {
-				items: cart.items.map((i) => ({ ...i })),
-				total: cart.total
-			};
-			cart.clear();
+		checkoutError = '';
+		try {
+			const response = await fetch('/api/cart/validate', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					items: cart.items.map(({ eventId, tierId, qty }) => ({
+						eventId,
+						tierId,
+						qty
+					}))
+				})
+			});
+			const result = await response.json();
+			if (!response.ok)
+				throw new Error(result.error || 'Could not check ticket availability.');
+			checkoutError =
+				'Online booking is not available yet. Your cart is saved for this visit; no payment has been taken.';
+		} catch (error) {
+			checkoutError =
+				error.message || 'Could not reach checkout. Please try again.';
+		} finally {
 			checkingOut = false;
-		}, 900);
-	}
-
-	function closeReveal() {
-		completedOrder = null;
-		cart.close();
+		}
 	}
 
 	function onKeydown(e) {
@@ -42,17 +51,28 @@
 		onclick={() => cart.close()}
 		onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && cart.close()}
 	></div>
-	<aside class="drawer" transition:fly={{ x: 400, duration: 400, opacity: 1 }} aria-label="Shopping cart">
+	<aside
+		class="drawer"
+		transition:fly={{ x: 400, duration: 400, opacity: 1 }}
+		aria-label="Shopping cart"
+	>
 		<div class="drawer-head">
 			<h3>Your Cart</h3>
-			<button type="button" class="close" onclick={() => cart.close()} aria-label="Close cart">✕</button>
+			<button
+				type="button"
+				class="close"
+				onclick={() => cart.close()}
+				aria-label="Close cart">✕</button
+			>
 		</div>
 
 		{#if cart.items.length === 0}
 			<div class="empty">
 				<span class="empty-icon">🎫</span>
 				<p>Your cart is empty</p>
-				<a href="/events" class="btn btn-ghost" onclick={() => cart.close()}>Browse events</a>
+				<a href="/events" class="btn btn-ghost" onclick={() => cart.close()}
+					>Browse events</a
+				>
 			</div>
 		{:else}
 			<div class="items">
@@ -65,11 +85,27 @@
 						</div>
 						<div class="item-controls">
 							<div class="stepper">
-								<button type="button" onclick={() => cart.updateQty(item.eventId, item.tierId, item.qty - 1)}>−</button>
+								<button
+									type="button"
+									onclick={() =>
+										cart.updateQty(item.eventId, item.tierId, item.qty - 1)}
+									>−</button
+								>
 								<span>{item.qty}</span>
-								<button type="button" onclick={() => cart.updateQty(item.eventId, item.tierId, item.qty + 1)}>+</button>
+								<button
+									type="button"
+									disabled={checkingOut || item.qty >= item.available}
+									onclick={() =>
+										cart.updateQty(item.eventId, item.tierId, item.qty + 1)}
+									>+</button
+								>
 							</div>
-							<button type="button" class="remove" onclick={() => cart.remove(item.eventId, item.tierId)}>Remove</button>
+							<button
+								type="button"
+								class="remove"
+								onclick={() => cart.remove(item.eventId, item.tierId)}
+								>Remove</button
+							>
 						</div>
 						<span class="line-total">{formatNaira(item.price * item.qty)}</span>
 					</div>
@@ -77,6 +113,9 @@
 			</div>
 
 			<div class="summary">
+				{#if checkoutError}<p class="checkout-notice" role="alert">
+						{checkoutError}
+					</p>{/if}
 				<div class="row">
 					<span>Subtotal</span>
 					<span>{formatNaira(cart.total)}</span>
@@ -85,7 +124,12 @@
 					<span>Total</span>
 					<span>{formatNaira(cart.total)}</span>
 				</div>
-				<button type="button" class="btn btn-primary checkout" onclick={checkout} disabled={checkingOut}>
+				<button
+					type="button"
+					class="btn btn-primary checkout"
+					onclick={checkout}
+					disabled={checkingOut}
+				>
 					{#if checkingOut}
 						<span class="spinner"></span> Processing...
 					{:else}
@@ -97,11 +141,12 @@
 	</aside>
 {/if}
 
-{#if completedOrder}
-	<TicketReveal order={completedOrder} onclose={closeReveal} />
-{/if}
-
 <style>
+	.checkout-notice {
+		color: var(--coral);
+		font-size: 0.88rem;
+		margin-bottom: 16px;
+	}
 	.backdrop {
 		position: fixed;
 		inset: 0;

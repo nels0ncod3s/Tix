@@ -1,15 +1,24 @@
 <script>
 	import { reveal } from '$lib/actions/reveal.js';
-	import { hostEvents, formatNaira } from '$lib/data/dashboard.js';
+	import { formatNaira } from '$lib/utils/currency.js';
+	let { data } = $props();
+	const hostEvents = $derived(data.hostEvents);
 
 	let filter = $state('all');
 
 	const filtered = $derived(
-		filter === 'all' ? hostEvents : hostEvents.filter((e) => e.status === filter)
+		filter === 'all'
+			? hostEvents
+			: hostEvents.filter((e) => e.status === filter)
 	);
 
 	function formattedDate(date) {
-		return new Date(date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+		if (!date) return 'Date to be confirmed';
+		return new Date(date).toLocaleDateString('en-US', {
+			day: '2-digit',
+			month: 'short',
+			year: 'numeric'
+		});
 	}
 </script>
 
@@ -28,7 +37,12 @@
 
 <div class="filter-row">
 	{#each [['all', 'All'], ['published', 'Published'], ['draft', 'Drafts']] as [value, label] (value)}
-		<button type="button" class="chip" class:active={filter === value} onclick={() => (filter = value)}>
+		<button
+			type="button"
+			class="chip"
+			class:active={filter === value}
+			onclick={() => (filter = value)}
+		>
 			{label}
 		</button>
 	{/each}
@@ -40,7 +54,9 @@
 			<div class="event-card-head">
 				<div>
 					<h3>{event.title}</h3>
-					<span class="event-meta">📅 {formattedDate(event.date)} · 📍 {event.venue}, {event.city}</span>
+					<span class="event-meta"
+						>📅 {formattedDate(event.date)} · 📍 {event.venue}, {event.city}</span
+					>
 				</div>
 				<span class="status-badge" class:draft={event.status === 'draft'}>
 					{event.status === 'draft' ? 'Draft' : 'Published'}
@@ -49,9 +65,17 @@
 
 			<div class="progress-row">
 				<div class="progress-track">
-					<div class="progress-fill" style="width:{Math.min(100, (event.ticketsSold / event.ticketsTotal) * 100)}%"></div>
+					<div
+						class="progress-fill"
+						style="width:{Math.min(
+							100,
+							(event.ticketsSold / Math.max(1, event.ticketsTotal)) * 100
+						)}%"
+					></div>
 				</div>
-				<span class="progress-label">{event.ticketsSold} / {event.ticketsTotal} sold</span>
+				<span class="progress-label"
+					>{event.ticketsSold} / {event.ticketsTotal} sold</span
+				>
 			</div>
 
 			<div class="event-card-foot">
@@ -64,8 +88,14 @@
 					<strong>{event.views.toLocaleString()}</strong>
 				</div>
 				<div class="foot-actions">
-					<a href={`/events/${event.id}`} class="btn btn-ghost foot-btn">View live</a>
-					<button type="button" class="btn btn-ghost foot-btn">Edit</button>
+					{#if event.status === 'published'}<a
+							href={`/events/${event.id}`}
+							class="btn btn-ghost foot-btn">View live</a
+						>{/if}
+					<a
+						href={`/dashboard/events/${event.id}/edit`}
+						class="btn btn-ghost foot-btn">Edit</a
+					>
 				</div>
 			</div>
 		</div>

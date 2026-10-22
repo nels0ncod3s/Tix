@@ -1,3 +1,4 @@
+import { isEventOnSale } from '../utils/event-sales.js';
 let items = $state([]);
 let isOpen = $state(false);
 
@@ -15,24 +16,48 @@ export const cart = {
 		return isOpen;
 	},
 	add(item) {
-		const existing = items.find((i) => i.eventId === item.eventId && i.tierId === item.tierId);
+		if (
+			!isEventOnSale({ date: item.eventDate, status: item.status }) ||
+			!Number.isSafeInteger(item.qty) ||
+			item.qty < 1 ||
+			!Number.isSafeInteger(item.available) ||
+			item.available < 1
+		)
+			return false;
+		const existing = items.find(
+			(i) => i.eventId === item.eventId && i.tierId === item.tierId
+		);
 		if (existing) {
+			if (existing.qty + item.qty > item.available) return false;
 			existing.qty += item.qty;
+			existing.available = item.available;
 		} else {
+			if (item.qty > item.available) return false;
 			items.push({ ...item });
 		}
+		return true;
 	},
 	updateQty(eventId, tierId, qty) {
-		const item = items.find((i) => i.eventId === eventId && i.tierId === tierId);
+		const item = items.find(
+			(i) => i.eventId === eventId && i.tierId === tierId
+		);
 		if (!item) return;
 		if (qty <= 0) {
 			this.remove(eventId, tierId);
 			return;
 		}
+		if (
+			!Number.isSafeInteger(qty) ||
+			qty > item.available ||
+			!isEventOnSale({ date: item.eventDate, status: item.status })
+		)
+			return;
 		item.qty = qty;
 	},
 	remove(eventId, tierId) {
-		items = items.filter((i) => !(i.eventId === eventId && i.tierId === tierId));
+		items = items.filter(
+			(i) => !(i.eventId === eventId && i.tierId === tierId)
+		);
 	},
 	clear() {
 		items = [];

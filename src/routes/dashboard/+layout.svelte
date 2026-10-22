@@ -2,7 +2,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import { page } from '$app/state';
 
-	let { children } = $props();
+	let { children, data } = $props();
 	let mobileNavOpen = $state(false);
 
 	const navItems = [
@@ -55,11 +55,14 @@
 			<div class="host-chip">
 				<span class="host-avatar">🎤</span>
 				<div>
-					<strong>Naija Nights Ltd</strong>
-					<span>Host account</span>
+					<strong>{data.host.name}</strong>
+					<span>{data.host.email}</span>
 				</div>
 			</div>
 			<a href="/" class="back-link">← Back to Tix</a>
+			<form method="POST" action="/auth/logout">
+				<button class="btn btn-ghost">Sign out</button>
+			</form>
 		</div>
 	</aside>
 
@@ -71,10 +74,40 @@
 				aria-label="Open menu"
 				onclick={() => (mobileNavOpen = true)}
 			>
-				<svg viewBox="0 0 24 24" width="20" height="20"><line x1="4" y1="7" x2="20" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="4" y1="17" x2="20" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+				<svg viewBox="0 0 24 24" width="20" height="20"
+					><line
+						x1="4"
+						y1="7"
+						x2="20"
+						y2="7"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+					/><line
+						x1="4"
+						y1="12"
+						x2="20"
+						y2="12"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+					/><line
+						x1="4"
+						y1="17"
+						x2="20"
+						y2="17"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+					/></svg
+				>
 			</button>
-			<a href="/" class="topbar-brand display">Tix<span class="lime-text">.</span></a>
-			<a href="/dashboard/create" class="btn btn-primary topbar-cta">+ Create Event</a>
+			<a href="/" class="topbar-brand display"
+				>Tix<span class="lime-text">.</span></a
+			>
+			<a href="/dashboard/create" class="btn btn-primary topbar-cta"
+				>+ Create Event</a
+			>
 		</header>
 
 		<main class="dash-content">
@@ -84,21 +117,42 @@
 </div>
 
 {#if mobileNavOpen}
-	<div class="mobile-nav-backdrop" transition:fade={{ duration: 200 }} onclick={closeMobileNav} role="presentation"></div>
+	<div
+		class="mobile-nav-backdrop"
+		transition:fade={{ duration: 200 }}
+		onclick={closeMobileNav}
+		role="presentation"
+	></div>
 	<div class="mobile-nav-panel" transition:fly={{ x: -280, duration: 300 }}>
 		<div class="mobile-nav-head">
-			<span class="display">Tix<span class="lime-text">.</span> <span class="brand-tag">HOST</span></span>
-			<button type="button" class="close" onclick={closeMobileNav} aria-label="Close menu">✕</button>
+			<span class="display"
+				>Tix<span class="lime-text">.</span>
+				<span class="brand-tag">HOST</span></span
+			>
+			<button
+				type="button"
+				class="close"
+				onclick={closeMobileNav}
+				aria-label="Close menu">✕</button
+			>
 		</div>
 		<nav class="side-nav">
 			{#each navItems as item (item.href)}
-				<a href={item.href} class="side-link" class:active={isActive(item)} onclick={closeMobileNav}>
+				<a
+					href={item.href}
+					class="side-link"
+					class:active={isActive(item)}
+					onclick={closeMobileNav}
+				>
 					<span class="side-icon">{item.icon}</span>
 					{item.label}
 				</a>
 			{/each}
 		</nav>
 		<a href="/" class="back-link">← Back to Tix</a>
+		<form method="POST" action="/auth/logout">
+			<button class="btn btn-ghost">Sign out</button>
+		</form>
 	</div>
 {/if}
 
@@ -155,7 +209,9 @@
 		font-weight: 600;
 		font-size: 0.92rem;
 		color: var(--text-dim);
-		transition: background 0.2s var(--ease), color 0.2s var(--ease);
+		transition:
+			background 0.2s var(--ease),
+			color 0.2s var(--ease);
 	}
 
 	.side-icon {
@@ -334,8 +390,5 @@
 	}
 
 	@media (max-width: 560px) {
-		.topbar-cta span.long {
-			display: none;
-		}
 	}
 </style>

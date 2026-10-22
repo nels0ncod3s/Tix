@@ -3,7 +3,9 @@
 	import { cart } from '$lib/stores/cart.svelte.js';
 	import TicketCard from '$lib/components/TicketCard.svelte';
 	import { formatNaira } from '$lib/utils/currency.js';
-	import { events, categories } from '$lib/data/events.js';
+	import { categories } from '$lib/data/events.js';
+	import { isEventOnSale } from '$lib/utils/event-sales.js';
+	import { onMount } from 'svelte';
 
 	let { data } = $props();
 	const event = $derived(data.event);
@@ -11,22 +13,42 @@
 	let selectedTierId = $state(undefined);
 	let qty = $state(1);
 	let added = $state(false);
+	let notice = $state('');
+	let now = $state(new Date());
+	onMount(() => {
+		const timer = setInterval(() => (now = new Date()), 30000);
+		return () => clearInterval(timer);
+	});
+	const onSale = $derived(isEventOnSale(event, now));
 
 	$effect(() => {
 		selectedTierId = event.tiers[0].id;
 		qty = 1;
 	});
 
-	const selectedTier = $derived(event.tiers.find((t) => t.id === selectedTierId) ?? event.tiers[0]);
+	const selectedTier = $derived(
+		event.tiers.find((t) => t.id === selectedTierId) ?? event.tiers[0]
+	);
 	const subtotal = $derived(selectedTier.price * qty);
 	const cat = $derived(categories.find((c) => c.id === event.category));
 	const formattedDate = $derived(
-		new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+		new Date(event.date).toLocaleDateString('en-US', {
+			weekday: 'long',
+			month: 'long',
+			day: 'numeric',
+			year: 'numeric'
+		})
 	);
-	const related = $derived(events.filter((e) => e.category === event.category && e.id !== event.id).slice(0, 3));
+	const related = $derived(
+		data.related.filter((e) => isEventOnSale(e, now)).slice(0, 3)
+	);
 
 	function addToCart() {
-		cart.add({
+		if (!isEventOnSale(event) || selectedTier.available < 1) {
+			notice = 'Tickets are no longer on sale for this event.';
+			return;
+		}
+		const accepted = cart.add({
 			eventId: event.id,
 			tierId: selectedTier.id,
 			tierName: selectedTier.name,
@@ -34,8 +56,16 @@
 			date: formattedDate,
 			venue: `${event.venue}, ${event.city}`,
 			price: selectedTier.price,
-			qty
+			qty,
+			available: selectedTier.available,
+			eventDate: event.date,
+			status: event.status
 		});
+		if (!accepted) {
+			notice = 'You already have the available quantity in your cart.';
+			return;
+		}
+		notice = '';
 		added = true;
 		setTimeout(() => (added = false), 1600);
 		cart.open();
@@ -47,110 +77,131 @@
 </svelte:head>
 
 {#key event.id}
-<div class="hero-banner">
-	<span class="hero-watermark" aria-hidden="true">{cat?.icon}</span>
-	<div class="hero-scallop" aria-hidden="true"></div>
-	<div class="container hero-content">
-		<a href="/events" class="back-link">← Back to events</a>
-		{#if cat}<span class="badge cat-badge">{cat.icon} {cat.label}</span>{/if}
-		<h1 class="display">{event.title}</h1>
-		<p class="tagline">{event.tagline}</p>
-		<div class="meta-row">
-			<span>📅 {formattedDate} · {event.time}</span>
-			<span>📍 {event.venue}, {event.city}</span>
+	<div class="hero-banner">
+		<span class="hero-watermark" aria-hidden="true">{cat?.icon}</span>
+		<div class="hero-scallop" aria-hidden="true"></div>
+		<div class="container hero-content">
+			<a href="/events" class="back-link">← Back to events</a>
+			{#if cat}<span class="badge cat-badge">{cat.icon} {cat.label}</span>{/if}
+			<h1 class="display">{event.title}</h1>
+			<p class="tagline">{event.tagline}</p>
+			<div class="meta-row">
+				<span>📅 {formattedDate} · {event.time}</span>
+				<span>📍 {event.venue}, {event.city}</span>
+			</div>
 		</div>
 	</div>
-</div>
 
-<section class="section detail">
-	<div class="container detail-grid">
-		<div class="main-col">
-			<div class="block reveal" use:reveal>
-				<h2>About this event</h2>
-				<p class="description">{event.description}</p>
-			</div>
+	<section class="section detail">
+		<div class="container detail-grid">
+			<div class="main-col">
+				<div class="block reveal" use:reveal>
+					<h2>About this event</h2>
+					<p class="description">{event.description}</p>
+				</div>
 
-			<div class="block reveal" use:reveal>
-				<h2>{event.category === 'sports' ? 'Matchup' : 'Lineup'}</h2>
-				<ul class="lineup">
-					{#each event.lineup as act, i (act)}
-						<li style="animation-delay:{i * 60}ms">{act}</li>
-					{/each}
-				</ul>
-			</div>
+				<div class="block reveal" use:reveal>
+					<h2>{event.category === 'sports' ? 'Matchup' : 'Lineup'}</h2>
+					<ul class="lineup">
+						{#each event.lineup as act, i (act)}
+							<li style="animation-delay:{i * 60}ms">{act}</li>
+						{/each}
+					</ul>
+				</div>
 
-			<div class="block reveal" use:reveal>
-				<h2>Venue</h2>
-				<div class="venue-card">
-					<div class="venue-icon">📍</div>
-					<div>
-						<strong>{event.venue}</strong>
-						<span>{event.city}</span>
+				<div class="block reveal" use:reveal>
+					<h2>Venue</h2>
+					<div class="venue-card">
+						<div class="venue-icon">📍</div>
+						<div>
+							<strong>{event.venue}</strong>
+							<span>{event.city}</span>
+						</div>
 					</div>
 				</div>
 			</div>
+
+			<aside class="ticket-panel card">
+				<h3>Select tickets</h3>
+				<div class="tiers">
+					{#each event.tiers as tier (tier.id)}
+						<button
+							type="button"
+							class="tier"
+							class:active={selectedTierId === tier.id}
+							disabled={!onSale || tier.available < 1}
+							onclick={() => {
+								selectedTierId = tier.id;
+								qty = Math.min(qty, Math.max(1, tier.available));
+							}}
+						>
+							<div class="tier-top">
+								<span class="tier-name">{tier.name}</span>
+								<span class="tier-price">{formatNaira(tier.price)}</span>
+							</div>
+							<ul class="perks">
+								{#each tier.perks as perk (perk)}
+									<li>{perk}</li>
+								{/each}
+							</ul>
+							<span class="availability">{tier.available} left</span>
+						</button>
+					{/each}
+				</div>
+
+				<div class="qty-row">
+					<span>Quantity</span>
+					<div class="stepper">
+						<button type="button" onclick={() => (qty = Math.max(1, qty - 1))}
+							>−</button
+						>
+						<span>{qty}</span>
+						<button
+							type="button"
+							onclick={() => (qty = Math.min(selectedTier.available, qty + 1))}
+							>+</button
+						>
+					</div>
+				</div>
+
+				<div class="subtotal-row">
+					<span>Subtotal</span>
+					<strong class="display">{formatNaira(subtotal)}</strong>
+				</div>
+
+				<button
+					type="button"
+					class="btn btn-primary buy-btn"
+					class:added
+					onclick={addToCart}
+					disabled={!onSale || selectedTier.available < 1}
+				>
+					{#if !onSale}Sales closed{:else if selectedTier.available < 1}Sold out{:else if added}
+						✓ Added to cart
+					{:else}
+						Add to cart
+					{/if}
+				</button>
+				<p class="fine-print" role="status">
+					{notice ||
+						(!onSale
+							? 'This event date has passed. Tickets are no longer available.'
+							: 'Sales close at midnight after the event date (Lagos time).')}
+				</p>
+			</aside>
 		</div>
 
-		<aside class="ticket-panel card">
-			<h3>Select tickets</h3>
-			<div class="tiers">
-				{#each event.tiers as tier (tier.id)}
-					<button
-						type="button"
-						class="tier"
-						class:active={selectedTierId === tier.id}
-						onclick={() => (selectedTierId = tier.id)}
-					>
-						<div class="tier-top">
-							<span class="tier-name">{tier.name}</span>
-							<span class="tier-price">{formatNaira(tier.price)}</span>
-						</div>
-						<ul class="perks">
-							{#each tier.perks as perk (perk)}
-								<li>{perk}</li>
-							{/each}
-						</ul>
-						<span class="availability">{tier.available} left</span>
-					</button>
-				{/each}
-			</div>
-
-			<div class="qty-row">
-				<span>Quantity</span>
-				<div class="stepper">
-					<button type="button" onclick={() => (qty = Math.max(1, qty - 1))}>−</button>
-					<span>{qty}</span>
-					<button type="button" onclick={() => (qty = Math.min(selectedTier.available, qty + 1))}>+</button>
+		{#if related.length}
+			<div class="container related">
+				<h2 class="display reveal" use:reveal>You might also like</h2>
+				<div class="grid">
+					{#each related as e, i (e.id)}
+						<TicketCard event={e} delay={i * 80} />
+					{/each}
 				</div>
 			</div>
-
-			<div class="subtotal-row">
-				<span>Subtotal</span>
-				<strong class="display">{formatNaira(subtotal)}</strong>
-			</div>
-
-			<button type="button" class="btn btn-primary buy-btn" class:added onclick={addToCart}>
-				{#if added}
-					✓ Added to cart
-				{:else}
-					Add to cart
-				{/if}
-			</button>
-			<p class="fine-print">You'll review your order before it's final.</p>
-		</aside>
-	</div>
-
-	{#if related.length}
-		<div class="container related">
-			<h2 class="display reveal" use:reveal>You might also like</h2>
-			<div class="grid">
-				{#each related as e, i (e.id)}
-					<TicketCard event={e} delay={i * 80} />
-				{/each}
-			</div>
-		</div>
-	{/if}
-</section>
+		{/if}
+	</section>
 {/key}
 
 <style>
@@ -178,7 +229,12 @@
 		right: 0;
 		bottom: 0;
 		height: 22px;
-		background: radial-gradient(circle at 11px 0, transparent 11px, var(--bg) 11.5px) 0 0 / 22px 22px repeat-x;
+		background: radial-gradient(
+				circle at 11px 0,
+				transparent 11px,
+				var(--bg) 11.5px
+			)
+			0 0 / 22px 22px repeat-x;
 	}
 
 	.hero-content {
@@ -319,7 +375,10 @@
 		border: 1.5px solid var(--border);
 		border-radius: var(--radius-md);
 		padding: 14px 16px;
-		transition: border-color 0.25s var(--ease), background 0.25s var(--ease), transform 0.25s var(--ease);
+		transition:
+			border-color 0.25s var(--ease),
+			background 0.25s var(--ease),
+			transform 0.25s var(--ease);
 	}
 
 	.tier:hover {
@@ -438,7 +497,10 @@
 
 	.buy-btn {
 		width: 100%;
-		transition: background 0.3s var(--ease), transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+		transition:
+			background 0.3s var(--ease),
+			transform 0.3s var(--ease),
+			box-shadow 0.3s var(--ease);
 	}
 
 	.buy-btn.added {

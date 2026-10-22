@@ -6,24 +6,33 @@
 	import { tilt } from '$lib/actions/tilt.js';
 	import { rngFor } from '$lib/utils/hash.js';
 	import TicketCard from '$lib/components/TicketCard.svelte';
-	import CountUp from '$lib/components/CountUp.svelte';
-	import { formatNaira } from '$lib/utils/currency.js';
-	import { events, categories } from '$lib/data/events.js';
 
-	const ticker = [...events, ...events];
+	import { formatNaira } from '$lib/utils/currency.js';
+	import { categories } from '$lib/data/events.js';
+	let { data } = $props();
+	const events = $derived(data.events);
+
+	const ticker = $derived([...events, ...events]);
 
 	let query = $state('');
 
-	const featured = events.filter((e) => e.featured).slice(0, 6);
-	const heroPicks = events.filter((e) => e.featured).slice(0, 3);
+	const featured = $derived(events.filter((e) => e.featured).slice(0, 6));
+	const heroPicks = $derived(events.filter((e) => e.featured).slice(0, 3));
 	const heroRotations = [-8, 6, -3];
-	const heroBars = heroPicks.map((p) => {
-		const rng = rngFor(p.id + 'hero-stack');
-		return Array.from({ length: 16 }, () => (rng() > 0.6 ? 3 : rng() > 0.3 ? 2 : 1));
-	});
+	const heroBars = $derived(
+		heroPicks.map((p) => {
+			const rng = rngFor(p.id + 'hero-stack');
+			return Array.from({ length: 16 }, () =>
+				rng() > 0.6 ? 3 : rng() > 0.3 ? 2 : 1
+			);
+		})
+	);
 
 	function shortDate(date) {
-		return new Date(date).toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+		return new Date(date).toLocaleDateString('en-US', {
+			day: '2-digit',
+			month: 'short'
+		});
 	}
 
 	function categoryFor(id) {
@@ -32,7 +41,9 @@
 
 	function search(e) {
 		e.preventDefault();
-		goto(query.trim() ? `/events?q=${encodeURIComponent(query.trim())}` : '/events');
+		goto(
+			query.trim() ? `/events?q=${encodeURIComponent(query.trim())}` : '/events'
+		);
 	}
 
 	const steps = [
@@ -64,91 +75,106 @@
 </svelte:head>
 
 <div class="hero-fold">
-<section class="hero" use:spotlight>
-	<div class="hero-glow" aria-hidden="true"></div>
+	<section class="hero" use:spotlight>
+		<div class="hero-glow" aria-hidden="true"></div>
 
-	<div class="container hero-grid">
-		<div class="hero-copy">
-			<span class="eyebrow" in:fly={{ y: 18, duration: 600 }}>🎟 Now booking across Nigeria</span>
-			<h1 class="display" in:fly={{ y: 26, duration: 700, delay: 80 }}>
-				every ticket.<br />
-				every city.<br />
-				<span class="lime-text">one tap away.</span>
-			</h1>
-			<p class="lead" in:fly={{ y: 22, duration: 700, delay: 200 }}>
-				Concerts, comedy, football, and festivals — find what's on, grab your ticket,
-				and show up. No wahala.
-			</p>
+		<div class="container hero-grid">
+			<div class="hero-copy">
+				<span class="eyebrow" in:fly={{ y: 18, duration: 600 }}
+					>🎟 Now booking across Nigeria</span
+				>
+				<h1 class="display" in:fly={{ y: 26, duration: 700, delay: 80 }}>
+					every ticket.<br />
+					every city.<br />
+					<span class="lime-text">one tap away.</span>
+				</h1>
+				<p class="lead" in:fly={{ y: 22, duration: 700, delay: 200 }}>
+					Concerts, comedy, football, and festivals — find what's on, grab your
+					ticket, and show up. No wahala.
+				</p>
 
-			<form class="hero-search" in:fly={{ y: 22, duration: 700, delay: 280 }} onsubmit={search}>
-				<svg viewBox="0 0 24 24" width="20" height="20"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-				<input type="text" placeholder="Search artists, venues, or cities..." bind:value={query} />
-				<button type="submit" class="btn btn-primary">Search</button>
-			</form>
+				<form
+					class="hero-search"
+					in:fly={{ y: 22, duration: 700, delay: 280 }}
+					onsubmit={search}
+				>
+					<svg viewBox="0 0 24 24" width="20" height="20"
+						><circle
+							cx="11"
+							cy="11"
+							r="7"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+						/><line
+							x1="21"
+							y1="21"
+							x2="16.65"
+							y2="16.65"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+						/></svg
+					>
+					<input
+						type="text"
+						placeholder="Search artists, venues, or cities..."
+						bind:value={query}
+					/>
+					<button type="submit" class="btn btn-primary">Search</button>
+				</form>
+			</div>
 
-			<div class="hero-stats" in:fly={{ y: 22, duration: 700, delay: 360 }}>
-				<div class="stat">
-					<strong><CountUp value={8200} suffix="+" /></strong>
-					<span>Tickets on sale</span>
-				</div>
-				<div class="stat">
-					<strong><CountUp value={1200000} suffix="+" /></strong>
-					<span>Tickets sold</span>
-				</div>
-				<div class="stat">
-					<strong><CountUp value={40} suffix="+" /></strong>
-					<span>Cities covered</span>
-				</div>
+			<div class="hero-stack" aria-hidden="true">
+				{#each heroPicks as pick, i (pick.id)}
+					<div
+						class="stack-ticket"
+						style="--rot:{heroRotations[i]}deg; --z:{i + 1}"
+						in:fly={{ y: 50, duration: 700, delay: 480 + i * 140 }}
+						use:tilt={{ max: 6, lift: 4 }}
+					>
+						<div class="st-top">
+							<span
+								>{categoryFor(pick.category)?.icon}
+								{categoryFor(pick.category)?.label}</span
+							>
+							<span>{shortDate(pick.date)}</span>
+						</div>
+						<span class="st-title">{pick.title}</span>
+						<span class="st-city">📍 {pick.city}</span>
+						<div class="st-perf" aria-hidden="true">
+							<span class="st-notch left"></span>
+							<span class="st-notch right"></span>
+						</div>
+						<div class="st-stub">
+							<div class="st-barcode" aria-hidden="true">
+								{#each heroBars[i] as w, bi (bi)}
+									<span style="width:{w}px"></span>
+								{/each}
+							</div>
+							<span class="st-price">{formatNaira(pick.price)}</span>
+						</div>
+					</div>
+				{/each}
 			</div>
 		</div>
 
-		<div class="hero-stack" aria-hidden="true">
-			{#each heroPicks as pick, i (pick.id)}
-				<div
-					class="stack-ticket"
-					style="--rot:{heroRotations[i]}deg; --z:{i + 1}"
-					in:fly={{ y: 50, duration: 700, delay: 480 + i * 140 }}
-					use:tilt={{ max: 6, lift: 4 }}
-				>
-					<div class="st-top">
-						<span>{categoryFor(pick.category)?.icon} {categoryFor(pick.category)?.label}</span>
-						<span>{shortDate(pick.date)}</span>
-					</div>
-					<span class="st-title">{pick.title}</span>
-					<span class="st-city">📍 {pick.city}</span>
-					<div class="st-perf" aria-hidden="true">
-						<span class="st-notch left"></span>
-						<span class="st-notch right"></span>
-					</div>
-					<div class="st-stub">
-						<div class="st-barcode" aria-hidden="true">
-							{#each heroBars[i] as w, bi (bi)}
-								<span style="width:{w}px"></span>
-							{/each}
-						</div>
-						<span class="st-price">{formatNaira(pick.price)}</span>
-					</div>
-				</div>
+		<div class="scroll-cue" in:fade={{ delay: 900, duration: 600 }}>
+			<span>Scroll</span>
+			<span class="scroll-line"></span>
+		</div>
+	</section>
+
+	<div class="ticker" aria-hidden="true">
+		<div class="ticker-track">
+			{#each ticker as t, i (i)}
+				<span class="ticker-item">
+					<span class="dot"></span>
+					{t.title} <em>· {t.city}</em> <b>{formatNaira(t.price)}</b>
+				</span>
 			{/each}
 		</div>
 	</div>
-
-	<div class="scroll-cue" in:fade={{ delay: 900, duration: 600 }}>
-		<span>Scroll</span>
-		<span class="scroll-line"></span>
-	</div>
-</section>
-
-<div class="ticker" aria-hidden="true">
-	<div class="ticker-track">
-		{#each ticker as t, i (i)}
-			<span class="ticker-item">
-				<span class="dot"></span>
-				{t.title} <em>· {t.city}</em> <b>{formatNaira(t.price)}</b>
-			</span>
-		{/each}
-	</div>
-</div>
 </div>
 
 <section class="section">
@@ -164,7 +190,7 @@
 		<div class="grid">
 			{#each featured as event, i (event.id)}
 				<TicketCard {event} delay={(i % 3) * 90} />
-			{/each}
+			{:else}<p>No upcoming events yet. Check back soon.</p>{/each}
 		</div>
 	</div>
 </section>
@@ -197,7 +223,10 @@
 		<div class="cta-card reveal" use:reveal>
 			<div class="cta-glow" aria-hidden="true"></div>
 			<h2 class="display">Got a show worth<br />selling out?</h2>
-			<p>List your event on Tix and reach thousands of people looking for something to do this weekend.</p>
+			<p>
+				List your event on Tix and reach thousands of people looking for
+				something to do this weekend.
+			</p>
 			<a href="/dashboard" class="btn btn-primary">Start selling tickets</a>
 		</div>
 	</div>
@@ -227,7 +256,11 @@
 		position: absolute;
 		inset: 0;
 		pointer-events: none;
-		background: radial-gradient(520px circle at var(--mx) var(--my), rgba(215, 255, 63, 0.14), transparent 70%);
+		background: radial-gradient(
+			520px circle at var(--mx) var(--my),
+			rgba(215, 255, 63, 0.14),
+			transparent 70%
+		);
 		transition: opacity 0.3s var(--ease);
 	}
 
@@ -284,7 +317,9 @@
 		max-width: 560px;
 		backdrop-filter: blur(16px);
 		color: var(--text-dimmer);
-		transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+		transition:
+			border-color 0.3s var(--ease),
+			box-shadow 0.3s var(--ease);
 	}
 
 	.hero-search:focus-within {
@@ -306,30 +341,6 @@
 		outline: none;
 	}
 
-	.hero-stats {
-		display: flex;
-		gap: 40px;
-		margin-top: 30px;
-		flex-wrap: wrap;
-	}
-
-	.stat {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-
-	.stat strong {
-		font-family: 'Anton', sans-serif;
-		font-size: 2rem;
-		color: var(--lime);
-	}
-
-	.stat span {
-		font-size: 0.82rem;
-		color: var(--text-dimmer);
-	}
-
 	.hero-stack {
 		position: relative;
 		min-height: 460px;
@@ -348,13 +359,17 @@
 		--rot: 0deg;
 		--z: 1;
 		transform: rotate(var(--rot));
-		transition: transform 0.3s var(--ease-out-back), box-shadow 0.3s var(--ease);
+		transition:
+			transform 0.3s var(--ease-out-back),
+			box-shadow 0.3s var(--ease);
 		z-index: var(--z);
 		animation: float-slow 8s ease-in-out infinite;
 	}
 
 	.stack-ticket:hover {
-		box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.6), 0 0 0 2px var(--lime);
+		box-shadow:
+			0 40px 80px -20px rgba(0, 0, 0, 0.6),
+			0 0 0 2px var(--lime);
 	}
 
 	.stack-ticket:nth-child(1) {
@@ -497,9 +512,18 @@
 	}
 
 	@keyframes scroll-cue-move {
-		0% { transform: scaleY(0.4); opacity: 0.4; }
-		50% { transform: scaleY(1); opacity: 1; }
-		100% { transform: scaleY(0.4); opacity: 0.4; }
+		0% {
+			transform: scaleY(0.4);
+			opacity: 0.4;
+		}
+		50% {
+			transform: scaleY(1);
+			opacity: 1;
+		}
+		100% {
+			transform: scaleY(0.4);
+			opacity: 0.4;
+		}
 	}
 
 	@media (max-width: 768px) {
@@ -521,17 +545,6 @@
 			padding: 10px 16px;
 			font-size: 0.86rem;
 		}
-
-		.hero-stats {
-			gap: 20px;
-		}
-
-		.stat strong {
-			font-family: 'Inter', sans-serif;
-			font-weight: 800;
-			font-size: 1.3rem;
-			white-space: nowrap;
-		}
 	}
 
 	.ticker {
@@ -540,7 +553,13 @@
 		border-top: 1px solid var(--border);
 		border-bottom: 1px solid var(--border);
 		padding: 14px 0;
-		mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+		mask-image: linear-gradient(
+			90deg,
+			transparent,
+			black 8%,
+			black 92%,
+			transparent
+		);
 	}
 
 	.ticker-track {
@@ -578,7 +597,6 @@
 		background: var(--coral);
 		flex-shrink: 0;
 	}
-
 
 	.section-head {
 		display: flex;
@@ -637,7 +655,9 @@
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-		transition: border-color 0.3s var(--ease), transform 0.3s var(--ease);
+		transition:
+			border-color 0.3s var(--ease),
+			transform 0.3s var(--ease);
 	}
 
 	.bento-item:hover {
@@ -652,7 +672,11 @@
 		right: -80px;
 		top: -80px;
 		border-radius: 50%;
-		background: radial-gradient(circle, rgba(215, 255, 63, 0.1), transparent 70%);
+		background: radial-gradient(
+			circle,
+			rgba(215, 255, 63, 0.1),
+			transparent 70%
+		);
 		pointer-events: none;
 	}
 
@@ -775,7 +799,12 @@
 	.cta-glow {
 		position: absolute;
 		inset: -40%;
-		background: conic-gradient(from 0deg, var(--lime), var(--coral), var(--lime));
+		background: conic-gradient(
+			from 0deg,
+			var(--lime),
+			var(--coral),
+			var(--lime)
+		);
 		opacity: 0.12;
 		filter: blur(70px);
 		animation: spin-slow 16s linear infinite;

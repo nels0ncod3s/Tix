@@ -3,6 +3,7 @@
 	import { tilt } from '$lib/actions/tilt.js';
 	import { categories } from '$lib/data/events.js';
 	import { formatNaira } from '$lib/utils/currency.js';
+	import { isEventOnSale } from '$lib/utils/event-sales.js';
 	import { rngFor } from '$lib/utils/hash.js';
 
 	let { event, delay = 0 } = $props();
@@ -10,7 +11,9 @@
 	const cat = $derived(categories.find((c) => c.id === event.category));
 	const dateObj = $derived(new Date(event.date));
 	const day = $derived(dateObj.toLocaleDateString('en-US', { day: '2-digit' }));
-	const month = $derived(dateObj.toLocaleDateString('en-US', { month: 'short' }));
+	const month = $derived(
+		dateObj.toLocaleDateString('en-US', { month: 'short' })
+	);
 
 	const scatter = $derived.by(() => (rngFor(event.id)() * 7 - 3.5).toFixed(1));
 
@@ -21,7 +24,9 @@
 
 	const bars = $derived.by(() => {
 		const rng = rngFor(event.id + 'barcode');
-		return Array.from({ length: 30 }, () => (rng() > 0.6 ? 3 : rng() > 0.3 ? 2 : 1));
+		return Array.from({ length: 30 }, () =>
+			rng() > 0.6 ? 3 : rng() > 0.3 ? 2 : 1
+		);
 	});
 </script>
 
@@ -63,7 +68,11 @@
 			</div>
 			<span class="serial">NO. {serial}</span>
 		</div>
-		<span class="price-chip">From {formatNaira(event.price)}</span>
+		<span class="price-chip"
+			>{isEventOnSale(event)
+				? `From ${formatNaira(event.price)}`
+				: 'Sales closed'}</span
+		>
 	</div>
 </a>
 
@@ -74,12 +83,16 @@
 		border-radius: var(--radius-md);
 		box-shadow: var(--shadow-paper);
 		transform: rotate(var(--scatter, 0deg));
-		transition: transform 0.3s var(--ease-out-back), box-shadow 0.3s var(--ease);
+		transition:
+			transform 0.3s var(--ease-out-back),
+			box-shadow 0.3s var(--ease);
 		will-change: transform;
 	}
 
 	.ticket-card:hover {
-		box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.65), 0 0 0 2px var(--lime);
+		box-shadow:
+			0 40px 80px -20px rgba(0, 0, 0, 0.65),
+			0 0 0 2px var(--lime);
 	}
 
 	.ticket-image {
@@ -105,7 +118,11 @@
 		content: '';
 		position: absolute;
 		inset: 0;
-		background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.35) 100%);
+		background: linear-gradient(
+			180deg,
+			rgba(0, 0, 0, 0.05) 0%,
+			rgba(0, 0, 0, 0.35) 100%
+		);
 		pointer-events: none;
 	}
 
@@ -198,7 +215,11 @@
 	.perforation {
 		position: relative;
 		height: 6px;
-		background-image: radial-gradient(circle, rgba(23, 22, 15, 0.28) 1.6px, transparent 1.7px);
+		background-image: radial-gradient(
+			circle,
+			rgba(23, 22, 15, 0.28) 1.6px,
+			transparent 1.7px
+		);
 		background-size: 11px 6px;
 		background-repeat: repeat-x;
 		background-position: center;
